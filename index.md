@@ -21,8 +21,7 @@ title: Home
   <img src="assets/italo-profile.jpeg" alt="Italo" width="150" style="border-radius: 50%;">
   <h3>Italo Rojas</h3>
   <p><em>MSc</em></p>
-  <!--<p>I like to work with audio, nature and sustainable materials.</p>
-</div>-->
+</div>
 
 <!-- Copy the block above to add more team members -->
 
@@ -32,9 +31,9 @@ title: Home
 
 | Project | Description |
 |---------|-------------|
-| [Road to Edible Patterns](projects/project1/docs/) | *Curve lines pattern with ink* |
+| [Project 1 — Road to Edible Patterns](projects/project1/docs/) | *Curve lines pattern with ink* |
 
 <!-- Add rows as you complete more projects:
-| [Project 2](projects/project2/docs/) | *Brief description of project 2* |
-| [Project 3](projects/project3/docs/) | *Brief description of project 3* |
+| [Project 2 — Title](projects/project2/docs/) | *Brief description of project 2* |
+| [Project 3 — Title](projects/project3/docs/) | *Brief description of project 3* |
 -->
