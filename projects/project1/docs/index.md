@@ -23,7 +23,9 @@ After that, we decided to be more careful in milestone one and learn about the p
 
 We would like to start from the tutorial and then add more encoders to add more knobs. We first created a simulation of the hardware and knobs to see if the result was good enough. we did this using Claude Sonnet 4.6. The arduino code is in development.
 
-![Simulation](assets/simulation-tool.mov)
+<video width="560" controls>
+  <source src="assets/simulation-tool.mov" type="video/mp4">
+</video>
 
 
 ### Hardware Setup
