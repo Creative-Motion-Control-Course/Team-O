@@ -3,7 +3,7 @@ layout: default
 title: "Road to Edible Patterns"
 ---
 
-# Project 1: Road to dible Patterns
+# Project 1: Road to Edible Patterns
 
 ## Concept
 
