@@ -86,7 +86,12 @@ void loop() {
 
 ## Results
 
-Coming soon!
+Examples
+
+![Hardware setup photo v0](assets/example2.jpg)
+![Hardware setup photo v0](assets/example1.jpg)
+
+
 <!--
 
 Show your project in action. Embed a video of it working:
