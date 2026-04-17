@@ -107,4 +107,9 @@ Show your project in action. Embed a video of it working:
 ## Reflection
 
 What did you learn? What would you do differently?
+
+
+Whats the primitive that is more accurate for the final goal? cakes? 
+Are the knobs really accurate to the parameters? what are the thresholds? 
+
 -->
