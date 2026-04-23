@@ -60,8 +60,6 @@ We started from the tutorial and then added more encoders to add more knobs. We 
 1 potentiometer (speed) to control the speed for y axis (Also control the direction when changing between positive and negative)
 1 button (up/down)
 
-![Hardware setup photo v0](assets/driver_module_encoder_setup.svg)
-
 ### Code Overview
 
 The key part is the sine wave as a function.
@@ -113,9 +111,6 @@ void set_y_frequency(float32_t frequency) {
 ```
 
 ## Results
-
-![Hardware setup photo v0](assets/example2.jpg)
-![Hardware setup photo v0](assets/example1.jpg)
 
 ![Sliders building](assets/sliders_building.jpg)
 
