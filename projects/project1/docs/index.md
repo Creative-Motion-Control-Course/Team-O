@@ -41,9 +41,9 @@ In prototyping we discovered that controlling the speed on the vertical axis cou
 
 ![Interface drawn sketch](assets/Interface_DrawnSketch1.png)
 
-![Interface digital sketch 1](assets/Interface_DigitalSketch1.png)
+![Interface digital sketch 1](assets/Interface_Digital_Sketch1.png)
 
-![Interface digital sketch 2](assets/Interface_DigitalSketch2.png)
+![Interface digital sketch 2](assets/Interface_Digital_Sketch2.png)
 
 ## Implementation
 
