@@ -2,6 +2,7 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+._*
 
 # Jekyll
 _site/
@@ -18,6 +19,12 @@ node_modules/
 
 # Logs
 *.log
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
 
 # Arduino build artifacts
 build/
