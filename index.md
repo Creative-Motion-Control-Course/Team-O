@@ -32,6 +32,8 @@ title: Home
 | Project | Description |
 |---------|-------------|
 | [Project 1 — Road to Edible Patterns](projects/project1/docs/) | *Curve lines pattern with ink* |
+| [Final Project — Edible Patterns](projects/finalProject/docs/) | *Piping cake decoration and machines* |
+
 
 <!-- Add rows as you complete more projects:
 | [Project 2 — Title](projects/project2/docs/) | *Brief description of project 2* |
