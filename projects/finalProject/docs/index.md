@@ -15,8 +15,8 @@ title: "Edible Patterns"
 
 The machine is intended to create patterns that combines techniques of latticing and with the piping techniques of extruded patterns. Typically latticing uses premade stencils.  This fixed pattern prevents pipers from make variations with the stencil designs without create a new stencil. 
 
-![Example 1](assets/stencil.PNG)
-![Example 2](assets/cake.PNG)
+![Example 1](assets/stencil.png)
+![Example 2](assets/cake.png)
 
 
 ### 3. Responsiveness 
@@ -35,11 +35,11 @@ We practiced piping to get a sense of the hand techniques used in cake decoratio
 
 This helped us discern the level difiiculty in translating certain piping techniques to the machine's motion path. That said even simple patterns require intricate and intricate hand manipulation of pressure and subtle changes in the z-axis. 
 
-![Pattern 1](assets/practice3.JPEG)
+![Pattern 1](assets/practice3.jpeg)
 
 Different designs are characterized by the noze tip. These create all different kinds of formations and textures to cake decorations. But we noticed that with only two design shapes, we could create intricate patterns. 
 
-![Pattern 1](assets/lines_dot.PNG)
+![Pattern 1](assets/lines_dots.png)
 
 ### 1. Variables to define a pattern
 After watching videos and try making the patterns by ourselves, we discover that we need the following variables to define the pattern.
@@ -54,12 +54,12 @@ After watching videos and try making the patterns by ourselves, we discover that
 We reviewed the following patterns that we extracted from the reference. We classified them into 2 levels.
 
 ### Basic patterns
-![Pattern 1](assets/lines_dots.PNG)
+![Pattern 1](assets/lines_dots.png)
 
 These patterns just use x, y, z and P 
 
 #### Pattern 1: Dot
-![Pattern 1](assets/dot.PNG)
+![Pattern 1](assets/dot.png)
 
 
 #### Pattern 2: Lines 
@@ -73,7 +73,7 @@ Lines require steady pressure. The shape is determined by the tip type. A common
 The intermediate patterns still place the extrusion tip perpendicular to the surface of the cake. 
 
 #### Pattern 3: Swirls
-![Pattern 3](assets/swirl.JPG)
+![Pattern 3](assets/swirl.jpg)
 
 Swirls require a tight circular motion and elevation on Z axis. 
 
@@ -146,8 +146,8 @@ KY‑023 Dual Axis PS2 Analog Joystick Module
 Combine geometric shapes through the extrusion of dots and lines. Using Inkscape, geometric shapes will be sent to Stepdance, where the user will adjust the frequency and amplification to create variable line and dots patterns. 
 
 
-![Sketch 1](assets/sketch2.JPEG)
-![Sketch 2](assets/sketch3.JPEG)
+![Sketch 1](assets/sketch2.jpeg)
+![Sketch 2](assets/sketch3.jpeg)
 
 
 
