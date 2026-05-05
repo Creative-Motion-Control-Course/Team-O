@@ -123,10 +123,14 @@ https://chem.uncg.edu/croatt/flow-chemistry/building-the-syringe-pump/
 #### Extrusion is controlled by a Force Sensor
 
  Adafruit Interlink FSR 402 (Round) Force Sensor
+![Pressure control](assets/force-sensor.jpg)
+
+
 
 #### Position of the extruder is controlled by an analog joystic on the x, y.
 
 KY‑023 Dual Axis PS2 Analog Joystick Module
+![Pressure control](assets/joystick-module.jpg)
 
 ### 2. Control and parameters and control mechanism (potentiometer, sliders or encoders)
 
