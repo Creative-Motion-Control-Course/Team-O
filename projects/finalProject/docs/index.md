@@ -3,162 +3,48 @@ layout: default
 title: "Edible Patterns"
 ---
 
-## Design Dimensions
- 
- ### 1. Relevance
- Our goal is to enable cake pipers the ability to generate intricate and precise geometric patterns that they are not current capable without machine control. 
- 
- We are exploring how this might provide cake pipers with a new tool to expand the types of patterns they can make. 
+# Milestone 2: Mid-point Class Review
 
+## 1. Adapt the 3D printer Ender and connect it to Stepdance and Teensy
+We worked on adapting the Ender machine with Emily. We used what we learned from the analog slider about crimping and electronics. We do not need an encoder to control the Z axis and the extrusion system; that is the most important conclusion of this step.
 
-### 2. Usability 
+## 2. First idea for the syringe holder
+After talking with the instructors, we defined that the final design is to place the syringe beside the stepper motor.
+1. We decided to use the same system Jennifer showed: a stepper motor moving the system up and down with a lead screw.
+2. We evaluated the two designs Alejandro proposed and selected the one where the stepper motor is mounted on top of the metal plate.
+3. We tested the weight of the whole lead screw motion system on the plate to see if it could resist. It performed very well.
+4. We figured out how we are going to hold the screw motion system, but we still need to solve how we are going to hold the syringe.
 
-The machine is intended to create patterns that combines techniques of latticing and with the piping techniques of extruded patterns. Typically latticing uses premade stencils.  This fixed pattern prevents pipers from make variations with the stencil designs without create a new stencil. 
+## 3. 3D printing v1
+We designed the first motor holder piece using Fusion. We printed it and noted some issues, so we need to iterate. With Alejandro's help we changed the design and printed again.
 
-![Example 1](assets/stencil.png)
-![Example 2](assets/cake.png)
+### 4. 3D printing v2
+The result was more resistent than before and now we are able to mount the stepper motor.
 
+# Challenges and proposals
 
-### 3. Responsiveness 
-Our goal is to allow cake pipers the ability to generate variable stencils patterns with the liveness ability to change or adjust these patterns. 
+## Syringe
+Since we do not have the syringe yet, we decided to buy one. That way we can try a cardboard mockup before modeling.
 
-For example with a circle pattern, cake pipers can adjust the frequency to create small variations and spikes with a circle that too intricate for the hand. Additionally, they can generate a repeating rings of circles the spiked variations as the pattern is generated. 
+## Syringe holder
+We are considering to use threaded insert to join the syringe.
 
+## Joystick control
+Since we need to adapt the joystick to receive two encoder signals, we decided to use keyboard arrows first as a preliminary step.
 
+# Pictures and video
 
-## User Research
+![Cheese prototype](/assets/cheese_v1.jpeg)
+![Holder 1](/assets/Holder1.jpeg)
+![Holder 2](/assets/Holder2.jpeg)
+![Measuring 1](/assets/measuring1.jpeg)
+![Measuring 2](/assets/measuring2.jpeg)
+![Measuring 3](/assets/measuring3.jpeg)
+![Measuring 4](/assets/measuring4.jpeg)
 
-![Piping decoration time](assets/trying_material.jpeg)
-
-
-We practiced piping to get a sense of the hand techniques used in cake decoration and pattern making.
-
-This helped us discern the level difiiculty in translating certain piping techniques to the machine's motion path. That said even simple patterns require intricate and intricate hand manipulation of pressure and subtle changes in the z-axis. 
-
-![Pattern 1](assets/practice3.jpeg)
-
-Different designs are characterized by the noze tip. These create all different kinds of formations and textures to cake decorations. But we noticed that with only two design shapes, we could create intricate patterns. 
-
-![Pattern 1](assets/lines_dots.png)
-
-### 1. Variables to define a pattern
-After watching videos and try making the patterns by ourselves, we discover that we need the following variables to define the pattern.
-  - X position
-  - Y position
-  - Z position
-  - Tip type
-  - Pressure level (P)
-
-
-### 2. Selected patterns
-We reviewed the following patterns that we extracted from the reference. We classified them into 2 levels.
-
-### Basic patterns
-![Pattern 1](assets/lines_dots.png)
-
-These patterns just use x, y, z and P 
-
-#### Pattern 1: Dot
-![Pattern 1](assets/dot.png)
-
-
-#### Pattern 2: Lines 
-![Pattern 2](assets/pattern1.PNG)
-
-Lines require steady pressure. The shape is determined by the tip type. A common technique is to fold or overlap lines.  
-
-
-### Intermediate Patterns
-
-The intermediate patterns still place the extrusion tip perpendicular to the surface of the cake. 
-
-#### Pattern 3: Swirls
-![Pattern 3](assets/swirl.jpg)
-
-Swirls require a tight circular motion and elevation on Z axis. 
-
-
-
-## Iteration proccess for Extrusion
-<!-- We discussed some crazy ideas...
-![Blood pressure machine](assets/BloodPressureMachine.png)
-![Sewing machine](assets/sewingMachine.png) -->
-
-Reference
-![Reference for machine head](assets/reference-machine-head.png)
- 
-
-## "Extrusion" Mechanism Concept
-For extrusion, the following mechanism uses a stepper motor to push the syringe. The speed (amount of revolutions) of the stepper motor pushes the syringe plunger, increasing the pressure level.
-
-  A force sensor control is mapped to the stepper motor speed pressuring the machine head to release the material.
-![Pressure control](assets/pressure-control.png)
-
-
-
-### Design and materials
-1. Syringe Pump 
-https://www.youtube.com/watch?v=CjKRdCHnVno&t=375s
-Nema 17 stepper motor,
-A4988 stepper motor driver,
-3D printer push lever case and 
-Flexible coupling 5*8
-CNC Sheild,
-Screwed shaft.
-2 Pistons,
-Laser Cut acrylic,
-
-### A4988 Driver Module Control
-The driver module requires a 12 voltz plug and a capacitor to prevent spikes and frying the module. 
-
-https://lastminuteengineers.com/a4988-stepper-motor-driver-arduino-tutorial/
-
-Resources: Materials and Models 
-https://chem.uncg.edu/croatt/flow-chemistry/building-the-syringe-pump/
-
-
-
-## User Interface & User Control
-
-#### Extrusion is controlled by a Force Sensor
-
- Adafruit Interlink FSR 402 (Round) Force Sensor
-![Pressure control](assets/force-sensor.jpg)
-
-
-
-#### Position of the extruder is controlled by an analog joystic on the x, y.
-
-KY‑023 Dual Axis PS2 Analog Joystick Module
-![Pressure control](assets/joystick-module.jpg)
-
-### 2. Control and parameters and control mechanism (potentiometer, sliders or encoders)
-
-#### Speed X: Amp x, Freq x
-
-#### Speed Y: Amp y, Freq y
-
-#### Z Axis:Freq z, Amp z
-
-
-## Prototype
-![UI](assets/prototype-UI.png)
-
-
-# Project Output (By Quarter's End)
-
-Combine geometric shapes through the extrusion of dots and lines. Using Inkscape, geometric shapes will be sent to Stepdance, where the user will adjust the frequency and amplification to create variable line and dots patterns. 
-
-
-![Sketch 1](assets/sketch2.jpeg)
-![Sketch 2](assets/sketch3.jpeg)
-
-
-
-## Problems 
-Extrusion amount may be quite limited
-Variability in pressure and extrusion.
-
+<video controls width="640">
+  <source src="/assets/final_result.mp4" type="video/mp4">
+</video>
 
 
 
