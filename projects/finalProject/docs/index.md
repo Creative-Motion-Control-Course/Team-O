@@ -19,7 +19,7 @@ After talking with the instructors, we defined that the final design is to place
 We designed the first motor holder piece using Fusion. We printed it and noted some issues, so we need to iterate. With Alejandro's help we changed the design and printed again.
 
 ### 4. 3D printing v2
-The result was more resistent than before and now we are able to mount the stepper motor.
+The result was more resistent than before and now we are able to mount the stepper motor. We still have some problems with the model so we need to model and print again.
 
 # Challenges and proposals
 
@@ -42,10 +42,8 @@ Since we need to adapt the joystick to receive two encoder signals, we decided t
 ![Measuring 3](/assets/measuring3.jpeg)
 ![Measuring 4](/assets/measuring4.jpeg)
 
-<video controls width="640">
-  <source src="/assets/final_result.mp4" type="video/mp4">
-</video>
-
+   
+   
 # Milestone 3: Peer Review
 
 We had the meeting with Team Fish. First they showed us their work and next steps, and then we presented ours. Our suggestions to them were related mostly with the UI and presets. Regarding our work, they told us that the joystick is a good idea because it is more intuitive to control the machine. They also suggested paying special attention to the syringe and the non-linear extrusion that it generates due to its mechanism. Finally, they recommended trying as soon as possible with frosting cake to observe the behaviour of the whole system — material, machine head, syringe, and control — all together.
