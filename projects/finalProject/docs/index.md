@@ -46,6 +46,6 @@ Since we need to adapt the joystick to receive two encoder signals, we decided t
   <source src="/assets/final_result.mp4" type="video/mp4">
 </video>
 
+# Milestone 3: Peer Review
 
-
-
+We had the meeting with Team Fish. First they showed us their work and next steps, and then we presented ours. Our suggestions to them were related mostly with the UI and presets. Regarding our work, they told us that the joystick is a good idea because it is more intuitive to control the machine. They also suggested paying special attention to the syringe and the non-linear extrusion that it generates due to its mechanism. Finally, they recommended trying as soon as possible with frosting cake to observe the behaviour of the whole system — material, machine head, syringe, and control — all together.
