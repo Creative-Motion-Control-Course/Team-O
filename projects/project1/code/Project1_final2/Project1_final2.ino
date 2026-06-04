@@ -25,6 +25,9 @@ Encoder encoder_1;
 // -- RPC Interface --
 RPC rpc;
 
+// -- Velocity Generator --
+VelocityGenerator speed_y_gen;
+
 
 void setup() {
   // -- Configure and start the output ports --

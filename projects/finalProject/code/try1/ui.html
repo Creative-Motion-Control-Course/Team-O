@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Team-O Plotter Control</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #111;
+      color: #eee;
+      font-family: 'Courier New', monospace;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.4rem;
+      letter-spacing: 0.2em;
+      color: #aaa;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+
+    #status-bar {
+      text-align: center;
+      font-size: 0.75rem;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    #status-bar span {
+      color: #f90;
+    }
+
+    #btn-row {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 30px;
+    }
+
+    #btn-row button {
+      padding: 10px 28px;
+      background: #222;
+      color: #eee;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    #btn-row button:hover {
+      background: #2a2a2a;
+      border-color: #f90;
+    }
+
+    #connect-btn.connected {
+      border-color: #0f9;
+      color: #0f9;
+    }
+
+    #disconnect-btn {
+      border-color: #444;
+      color: #888;
+    }
+
+    #disconnect-btn:hover {
+      border-color: #f66 !important;
+      color: #f66 !important;
+    }
+
+    .axes {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .axis-panel {
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 20px;
+    }
+
+    .axis-panel h2 {
+      font-size: 0.9rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .axis-panel.x h2 { color: #f66; }
+    .axis-panel.y h2 { color: #6af; }
+    .axis-panel.z h2 { color: #6f6; }
+    .axis-panel.e h2 { color: #c9f; }
+
+    .control {
+      margin-bottom: 18px;
+    }
+
+    .control-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 6px;
+    }
+
+    .control-label {
+      font-size: 0.72rem;
+      color: #777;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .control-value {
+      font-size: 0.85rem;
+      color: #ccc;
+      min-width: 40px;
+      text-align: right;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 2px;
+      background: #333;
+      outline: none;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #555;
+      border: 2px solid #888;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover {
+      background: #777;
+      border-color: #bbb;
+    }
+
+    .axis-panel.x input[type="range"]::-webkit-slider-thumb:active { border-color: #f66; }
+    .axis-panel.y input[type="range"]::-webkit-slider-thumb:active { border-color: #6af; }
+    .axis-panel.z input[type="range"]::-webkit-slider-thumb:active { border-color: #6f6; }
+    .axis-panel.e input[type="range"]::-webkit-slider-thumb:active { border-color: #c9f; }
+
+    .reset-btn {
+      display: block;
+      width: 100%;
+      margin-top: 14px;
+      padding: 6px 0;
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      border-radius: 4px;
+      color: #555;
+      font-family: 'Courier New', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .reset-btn:hover {
+      border-color: #555;
+      color: #aaa;
+    }
+
+    #log {
+      max-width: 1100px;
+      margin: 30px auto 0;
+      background: #0d0d0d;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-size: 0.75rem;
+      color: #444;
+      height: 220px;
+      overflow-y: auto;
+    }
+
+    #readout-bar {
+      max-width: 1100px;
+      margin: 24px auto 8px;
+      background: #0d0d0d;
+      border: 1px solid #222;
+      border-radius: 6px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .readout-label {
+      font-size: 0.7rem;
+      color: #555;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    #analog-a1-value {
+      font-size: 1rem;
+      color: #c9f;
+      letter-spacing: 0.05em;
+    }
+
+    #log p { margin-bottom: 2px; }
+    #log .sent { color: #6af; }
+    #log .info  { color: #888; }
+    #log .error { color: #f66; }
+
+    /* -- Jog Panel -- */
+    #jog-panel {
+      max-width: 1100px;
+      margin: 24px auto 0;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+
+    #jog-panel h3 {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #555;
+      white-space: nowrap;
+    }
+
+    #jog-toggle {
+      padding: 8px 20px;
+      background: #222;
+      color: #888;
+      border: 1px solid #444;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    #jog-toggle.active {
+      border-color: #f90;
+      color: #f90;
+    }
+
+    .jog-speed-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 160px;
+    }
+
+    .jog-speed-wrap label {
+      font-size: 0.68rem;
+      color: #555;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .jog-speed-wrap label span {
+      color: #aaa;
+    }
+
+    .arrow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 44px);
+      grid-template-rows: repeat(3, 44px);
+      gap: 4px;
+    }
+
+    .arrow-btn {
+      width: 44px;
+      height: 44px;
+      background: #222;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #666;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.1s, border-color 0.1s, color 0.1s;
+      user-select: none;
+    }
+
+    .arrow-btn:not(.disabled):hover {
+      background: #2a2a2a;
+      border-color: #555;
+      color: #aaa;
+    }
+
+    .arrow-btn.active {
+      background: #2a1a00;
+      border-color: #f90;
+      color: #f90;
+    }
+
+    .arrow-btn.disabled {
+      opacity: 0.2;
+      cursor: default;
+    }
+
+    .arrow-btn.center {
+      background: transparent;
+      border-color: transparent;
+      cursor: default;
+    }
+
+    /* -- Patterns Panel -- */
+    #patterns-panel {
+      max-width: 1100px;
+      margin: 24px auto 0;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .patterns-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .patterns-header-bar h3 {
+      font-size: 0.8rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #555;
+    }
+
+    .patterns-kbd-hint {
+      font-size: 0.63rem;
+      color: #3a3a3a;
+      letter-spacing: 0.06em;
+    }
+
+    .pattern-row {
+      display: grid;
+      grid-template-columns: 120px 1fr auto auto;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 20px;
+      border-bottom: 1px solid #1f1f1f;
+      border-left: 2px solid transparent;
+      transition: background 0.15s, border-color 0.15s;
+    }
+
+    .pattern-row:last-child { border-bottom: none; }
+    .pattern-row:hover { background: #1d1d1d; }
+
+    .pattern-row.active-pattern {
+      background: #1c1c20;
+      border-left-color: #f90;
+    }
+
+    .pattern-row-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .pattern-idx {
+      font-size: 0.58rem;
+      color: #3a3a3a;
+      letter-spacing: 0.15em;
+    }
+
+    .pattern-title {
+      font-size: 0.78rem;
+      color: #666;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .pattern-row.active-pattern .pattern-title { color: #f90; }
+
+    .pattern-knobs {
+      display: flex;
+      gap: 18px;
+      align-items: flex-end;
+    }
+
+    .pknob { flex: 1; min-width: 90px; }
+
+    .pknob-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 4px;
+    }
+
+    .pknob-label {
+      font-size: 0.62rem;
+      color: #4a4a4a;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .pknob-value {
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .pslider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 3px;
+      border-radius: 2px;
+      background: #2a2a2a;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .pslider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #3a3a3a;
+      border: 2px solid #5a5a5a;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .pslider::-webkit-slider-thumb:hover {
+      background: #555;
+      border-color: #f90;
+    }
+
+    .pattern-canvas {
+      border: 1px solid #222;
+      border-radius: 3px;
+      background: #0d0d0d;
+      display: block;
+    }
+
+    .pattern-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .pat-btn {
+      padding: 5px 12px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 0.08em;
+      border-radius: 3px;
+      cursor: pointer;
+      background: transparent;
+      transition: all 0.15s;
+    }
+
+    .pat-apply-btn {
+      border: 1px solid #333;
+      color: #555;
+    }
+
+    .pat-apply-btn:hover { border-color: #f90; color: #f90; }
+
+    .pat-apply-btn.running {
+      border-color: #f90;
+      color: #f90;
+      background: #1e1500;
+    }
+
+    .pat-stop-btn {
+      border: 1px solid #252525;
+      color: #3a3a3a;
+    }
+
+    .pat-stop-btn:hover { border-color: #f66; color: #f66; }
+  </style>
+</head>
+<body>
+
+  <h1>Team-O Plotter Control</h1>
+  <div id="status-bar">status: <span id="status-text">disconnected</span></div>
+
+  <div id="btn-row">
+    <button id="connect-btn">Connect to Serial</button>
+    <button id="hello-btn" onclick="sendHello()">Send Hello</button>
+    <button id="disconnect-btn" onclick="disconnect()">Disconnect</button>
+  </div>
+
+  <div class="axes">
+
+    <!-- X AXIS -->
+    <div class="axis-panel x">
+      <h2>X Axis</h2>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Amplitude</span>
+          <span class="control-value" id="val-x-amplitude">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_x_amplitude', this, 'val-x-amplitude')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Frequency</span>
+          <span class="control-value" id="val-x-frequency">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_x_frequency', this, 'val-x-frequency')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Speed</span>
+          <span class="control-value" id="val-speed-x">0.0</span>
+        </div>
+        <input type="range" min="-20" max="20" step="0.1" value="0"
+               oninput="onKnob('set_speed_x', this, 'val-speed-x')">
+      </div>
+
+      <button class="reset-btn" onclick="resetAxis('x')">reset x</button>
+    </div>
+
+    <!-- Y AXIS -->
+    <div class="axis-panel y">
+      <h2>Y Axis</h2>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Amplitude</span>
+          <span class="control-value" id="val-y-amplitude">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_y_amplitude', this, 'val-y-amplitude')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Frequency</span>
+          <span class="control-value" id="val-y-frequency">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_y_frequency', this, 'val-y-frequency')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Speed</span>
+          <span class="control-value" id="val-speed-y">0.0</span>
+        </div>
+        <input type="range" min="-20" max="20" step="0.1" value="0"
+               oninput="onKnob('set_speed_y', this, 'val-speed-y')">
+      </div>
+
+      <button class="reset-btn" onclick="resetAxis('y')">reset y</button>
+    </div>
+
+    <!-- Z AXIS -->
+    <div class="axis-panel z">
+      <h2>Z Axis</h2>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Amplitude</span>
+          <span class="control-value" id="val-z-amplitude">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_z_amplitude', this, 'val-z-amplitude')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Frequency</span>
+          <span class="control-value" id="val-z-frequency">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_z_frequency', this, 'val-z-frequency')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Speed</span>
+          <span class="control-value" id="val-speed-z">0.0</span>
+        </div>
+        <input type="range" min="-20" max="20" step="0.1" value="0"
+               oninput="onKnob('set_speed_z', this, 'val-speed-z')">
+      </div>
+
+      <button class="reset-btn" onclick="resetAxis('z')">reset z</button>
+    </div>
+
+    <!-- E AXIS (Extrusion) -->
+    <div class="axis-panel e">
+      <h2>E Axis (Extrusion)</h2>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Amplitude</span>
+          <span class="control-value" id="val-e-amplitude">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_e_amplitude', this, 'val-e-amplitude')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Frequency</span>
+          <span class="control-value" id="val-e-frequency">0.0</span>
+        </div>
+        <input type="range" min="0" max="20" step="0.1" value="0"
+               oninput="onKnob('set_e_frequency', this, 'val-e-frequency')">
+      </div>
+
+      <div class="control">
+        <div class="control-header">
+          <span class="control-label">Speed</span>
+          <span class="control-value" id="val-speed-e">0.0</span>
+        </div>
+        <input type="range" min="-20" max="20" step="0.1" value="0"
+               oninput="onKnob('set_speed_e', this, 'val-speed-e')">
+      </div>
+
+      <button class="reset-btn" onclick="resetAxis('e')">reset e</button>
+    </div>
+
+  </div>
+
+  <!-- JOG PANEL -->
+  <div id="jog-panel">
+    <h3>Jog</h3>
+
+    <button id="jog-toggle" onclick="toggleJog()">off</button>
+
+    <div class="jog-speed-wrap">
+      <label>Jog Speed <span id="jog-speed-val">5.0</span></label>
+      <input type="range" id="jog-speed" min="0.5" max="20" step="0.5" value="5">
+    </div>
+
+    <div class="arrow-grid">
+      <!-- row 1 -->
+      <div class="arrow-btn disabled"></div>
+      <div class="arrow-btn disabled" id="btn-up"
+           onmousedown="jogStart('y',1)" onmouseup="jogStop('y')" onmouseleave="jogStop('y')">&#9650;</div>
+      <div class="arrow-btn disabled"></div>
+      <!-- row 2 -->
+      <div class="arrow-btn disabled" id="btn-left"
+           onmousedown="jogStart('x',-1)" onmouseup="jogStop('x')" onmouseleave="jogStop('x')">&#9664;</div>
+      <div class="arrow-btn center"></div>
+      <div class="arrow-btn disabled" id="btn-right"
+           onmousedown="jogStart('x',1)" onmouseup="jogStop('x')" onmouseleave="jogStop('x')">&#9654;</div>
+      <!-- row 3 -->
+      <div class="arrow-btn disabled"></div>
+      <div class="arrow-btn disabled" id="btn-down"
+           onmousedown="jogStart('y',-1)" onmouseup="jogStop('y')" onmouseleave="jogStop('y')">&#9660;</div>
+      <div class="arrow-btn disabled"></div>
+    </div>
+
+    <div style="font-size:0.68rem; color:#444; line-height:1.8;">
+      enable jog mode<br>then use arrow keys<br>or click the buttons
+    </div>
+  </div>
+
+  <!-- PATTERNS PANEL -->
+  <div id="patterns-panel">
+    <div class="patterns-header-bar">
+      <h3>Pattern Generator</h3>
+      <div class="patterns-kbd-hint">1–5 select row &nbsp;·&nbsp; [ ] speed &nbsp;·&nbsp; Enter apply &nbsp;·&nbsp; Esc stop</div>
+    </div>
+
+    <!-- Row 1: Curve X -->
+    <div class="pattern-row" id="prow-curve-x" onclick="selectPatternRow(1)">
+      <div class="pattern-row-meta">
+        <div class="pattern-idx">01</div>
+        <div class="pattern-title">Curve X</div>
+      </div>
+      <div class="pattern-knobs">
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Freq</span>
+            <span class="pknob-value" id="pv-cx-freq">1.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cx-freq" min="0.1" max="20" step="0.1" value="1"
+                 oninput="updatePVal('pv-cx-freq',this); drawCurveX()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Amplitude</span>
+            <span class="pknob-value" id="pv-cx-amp">5.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cx-amp" min="0" max="20" step="0.1" value="5"
+                 oninput="updatePVal('pv-cx-amp',this); drawCurveX()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Phase</span>
+            <span class="pknob-value" id="pv-cx-phase">0°</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cx-phase" min="0" max="360" step="1" value="0"
+                 oninput="updatePValSuffix('pv-cx-phase',this,'°',0); drawCurveX()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Speed</span>
+            <span class="pknob-value" id="pv-cx-speed">0.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cx-speed" min="-20" max="20" step="0.1" value="0"
+                 oninput="updatePVal('pv-cx-speed',this)">
+        </div>
+      </div>
+      <canvas class="pattern-canvas" id="canvas-curve-x" width="200" height="70"></canvas>
+      <div class="pattern-actions">
+        <button class="pat-btn pat-apply-btn" id="papply-curve-x" onclick="applyPattern('curve-x')">apply</button>
+        <button class="pat-btn pat-stop-btn" onclick="stopPattern('curve-x')">stop</button>
+      </div>
+    </div>
+
+    <!-- Row 2: Curve Y -->
+    <div class="pattern-row" id="prow-curve-y" onclick="selectPatternRow(2)">
+      <div class="pattern-row-meta">
+        <div class="pattern-idx">02</div>
+        <div class="pattern-title">Curve Y</div>
+      </div>
+      <div class="pattern-knobs">
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Freq</span>
+            <span class="pknob-value" id="pv-cy-freq">1.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cy-freq" min="0.1" max="20" step="0.1" value="1"
+                 oninput="updatePVal('pv-cy-freq',this); drawCurveY()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Amplitude</span>
+            <span class="pknob-value" id="pv-cy-amp">5.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cy-amp" min="0" max="20" step="0.1" value="5"
+                 oninput="updatePVal('pv-cy-amp',this); drawCurveY()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Phase</span>
+            <span class="pknob-value" id="pv-cy-phase">0°</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cy-phase" min="0" max="360" step="1" value="0"
+                 oninput="updatePValSuffix('pv-cy-phase',this,'°',0); drawCurveY()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Speed</span>
+            <span class="pknob-value" id="pv-cy-speed">0.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-cy-speed" min="-20" max="20" step="0.1" value="0"
+                 oninput="updatePVal('pv-cy-speed',this)">
+        </div>
+      </div>
+      <canvas class="pattern-canvas" id="canvas-curve-y" width="200" height="70"></canvas>
+      <div class="pattern-actions">
+        <button class="pat-btn pat-apply-btn" id="papply-curve-y" onclick="applyPattern('curve-y')">apply</button>
+        <button class="pat-btn pat-stop-btn" onclick="stopPattern('curve-y')">stop</button>
+      </div>
+    </div>
+
+    <!-- Row 3: Circle -->
+    <div class="pattern-row" id="prow-circle" onclick="selectPatternRow(3)">
+      <div class="pattern-row-meta">
+        <div class="pattern-idx">03</div>
+        <div class="pattern-title">Circle</div>
+      </div>
+      <div class="pattern-knobs">
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Radius</span>
+            <span class="pknob-value" id="pv-ci-radius">10.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-ci-radius" min="0.1" max="20" step="0.1" value="10"
+                 oninput="updatePVal('pv-ci-radius',this); drawCircle()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Speed</span>
+            <span class="pknob-value" id="pv-ci-speed">2.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-ci-speed" min="0.1" max="20" step="0.1" value="2"
+                 oninput="updatePVal('pv-ci-speed',this); drawCircle()">
+        </div>
+      </div>
+      <canvas class="pattern-canvas" id="canvas-circle" width="90" height="70"></canvas>
+      <div class="pattern-actions">
+        <button class="pat-btn pat-apply-btn" id="papply-circle" onclick="applyPattern('circle')">apply</button>
+        <button class="pat-btn pat-stop-btn" onclick="stopPattern('circle')">stop</button>
+      </div>
+    </div>
+
+    <!-- Row 4: Spiral -->
+    <div class="pattern-row" id="prow-spiral" onclick="selectPatternRow(4)">
+      <div class="pattern-row-meta">
+        <div class="pattern-idx">04</div>
+        <div class="pattern-title">Spiral</div>
+      </div>
+      <div class="pattern-knobs">
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Rot. Speed</span>
+            <span class="pknob-value" id="pv-sp-rot">2.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-sp-rot" min="0.1" max="20" step="0.1" value="2"
+                 oninput="updatePVal('pv-sp-rot',this); drawSpiral()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Elev. Speed</span>
+            <span class="pknob-value" id="pv-sp-elev">1.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-sp-elev" min="0.1" max="10" step="0.1" value="1"
+                 oninput="updatePVal('pv-sp-elev',this); drawSpiral()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Levels</span>
+            <span class="pknob-value" id="pv-sp-levels">3</span>
+          </div>
+          <input type="range" class="pslider" id="ps-sp-levels" min="1" max="10" step="1" value="3"
+                 oninput="updatePValSuffix('pv-sp-levels',this,'',0); drawSpiral()">
+        </div>
+      </div>
+      <canvas class="pattern-canvas" id="canvas-spiral" width="90" height="70"></canvas>
+      <div class="pattern-actions">
+        <button class="pat-btn pat-apply-btn" id="papply-spiral" onclick="applyPattern('spiral')">apply</button>
+        <button class="pat-btn pat-stop-btn" onclick="stopPattern('spiral')">stop</button>
+      </div>
+    </div>
+
+    <!-- Row 5: Rect Line -->
+    <div class="pattern-row" id="prow-rect" onclick="selectPatternRow(5)">
+      <div class="pattern-row-meta">
+        <div class="pattern-idx">05</div>
+        <div class="pattern-title">Rect Line</div>
+      </div>
+      <div class="pattern-knobs">
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">X Speed</span>
+            <span class="pknob-value" id="pv-rt-xspeed">5.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-rt-xspeed" min="0.1" max="20" step="0.1" value="5"
+                 oninput="updatePVal('pv-rt-xspeed',this); drawRect()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Z Height</span>
+            <span class="pknob-value" id="pv-rt-step">5.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-rt-step" min="0.1" max="20" step="0.1" value="5"
+                 oninput="updatePVal('pv-rt-step',this); drawRect()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Z Speed</span>
+            <span class="pknob-value" id="pv-rt-zspeed">1.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-rt-zspeed" min="0.1" max="10" step="0.1" value="1"
+                 oninput="updatePVal('pv-rt-zspeed',this); drawRect()">
+        </div>
+        <div class="pknob">
+          <div class="pknob-header">
+            <span class="pknob-label">Retract</span>
+            <span class="pknob-value" id="pv-rt-retract">5.0</span>
+          </div>
+          <input type="range" class="pslider" id="ps-rt-retract" min="0" max="20" step="0.1" value="5"
+                 oninput="updatePVal('pv-rt-retract',this); drawRect()">
+        </div>
+      </div>
+      <canvas class="pattern-canvas" id="canvas-rect" width="200" height="70"></canvas>
+      <div class="pattern-actions">
+        <button class="pat-btn pat-apply-btn" id="papply-rect" onclick="applyPattern('rect')">apply</button>
+        <button class="pat-btn pat-stop-btn" onclick="stopPattern('rect')">stop</button>
+      </div>
+    </div>
+
+  </div><!-- end #patterns-panel -->
+
+  <div id="readout-bar">
+    <span class="readout-label">analog_a1 (extrusion knob)</span>
+    <span id="analog-a1-value">--</span>
+  </div>
+
+  <div id="log"><p class="info">serial log will appear here...</p></div>
+
+  <script>
+    let writer = null;
+
+    // -- Serial Connection --
+    document.getElementById('connect-btn').onclick = async () => {
+      if (writer) {
+        log('already connected', 'info');
+        return;
+      }
+      try {
+        const port = await navigator.serial.requestPort();
+        await port.open({ baudRate: 115200 });
+        writer = port.writable.getWriter();
+        setStatus('connected', true);
+        log('serial port opened at 115200', 'info');
+
+        // Read incoming serial (for debug feedback)
+        const reader = port.readable.getReader();
+        (async () => {
+          const decoder = new TextDecoder();
+          let buffer = '';
+          while (true) {
+            const { value, done } = await reader.read();
+            if (done) break;
+            buffer += decoder.decode(value);
+            const lines = buffer.split('\n');
+            buffer = lines.pop(); // keep incomplete line
+            for (const line of lines) {
+              const trimmed = line.trim();
+              if (!trimmed) continue;
+              // If it's a plain number, treat it as analog_a1
+              if (/^-?[\d.]+$/.test(trimmed)) {
+                document.getElementById('analog-a1-value').textContent = trimmed;
+              } else {
+                log('[teensy] ' + trimmed, 'info');
+              }
+            }
+          }
+        })();
+
+      } catch (err) {
+        setStatus('error: ' + err.message, false);
+        log('connection failed: ' + err.message, 'error');
+      }
+    };
+
+    // -- Send JSON RPC --
+    async function send(name, value) {
+      if (!writer) {
+        log('not connected', 'error');
+        return;
+      }
+      const msg = JSON.stringify({ name, args: [parseFloat(value)] }) + '\n';
+      try {
+        await writer.write(new TextEncoder().encode(msg));
+        log(msg.trim(), 'sent');
+      } catch (err) {
+        log('send error: ' + err.message, 'error');
+      }
+    }
+
+    // -- Disconnect --
+    async function disconnect() {
+      if (!writer) {
+        log('not connected', 'error');
+        return;
+      }
+      try {
+        await writer.close();
+      } catch (_) {}
+      writer = null;
+      setStatus('disconnected', false);
+      document.getElementById('connect-btn').textContent = 'Connect to Serial';
+      log('disconnected', 'info');
+    }
+
+    // -- Hello test --
+    async function sendHello() {
+      if (!writer) {
+        log('not connected', 'error');
+        return;
+      }
+      const msg = JSON.stringify({ name: 'hello' }) + '\n';
+      await writer.write(new TextEncoder().encode(msg));
+      log(msg.trim(), 'sent');
+    }
+
+    // -- Jog --
+    let jogEnabled = false;
+    const jogActive = { x: false, y: false };
+
+    document.getElementById('jog-speed').addEventListener('input', function () {
+      document.getElementById('jog-speed-val').textContent = parseFloat(this.value).toFixed(1);
+    });
+
+    function toggleJog() {
+      jogEnabled = !jogEnabled;
+      const btn = document.getElementById('jog-toggle');
+      btn.textContent = jogEnabled ? 'on' : 'off';
+      btn.classList.toggle('active', jogEnabled);
+      // enable/disable arrow buttons
+      ['btn-up','btn-down','btn-left','btn-right'].forEach(id => {
+        document.getElementById(id).classList.toggle('disabled', !jogEnabled);
+      });
+      if (!jogEnabled) {
+        jogStop('x');
+        jogStop('y');
+      }
+      log('jog mode ' + (jogEnabled ? 'enabled' : 'disabled'), 'info');
+    }
+
+    function jogSpeed() {
+      return parseFloat(document.getElementById('jog-speed').value);
+    }
+
+    function jogStart(axis, dir) {
+      if (!jogEnabled) return;
+      if (jogActive[axis]) return;
+      jogActive[axis] = true;
+      const speed = jogSpeed() * dir;
+      send('set_speed_' + axis, speed);
+      const btnId = axis === 'x' ? (dir > 0 ? 'btn-right' : 'btn-left')
+                                 : (dir > 0 ? 'btn-up'    : 'btn-down');
+      document.getElementById(btnId).classList.add('active');
+    }
+
+    function jogStop(axis) {
+      if (!jogActive[axis]) return;
+      jogActive[axis] = false;
+      send('set_speed_' + axis, 0);
+      ['btn-up','btn-down','btn-left','btn-right'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+      });
+    }
+
+    // Keyboard jog
+    const keyMap = {
+      ArrowRight: () => jogStart('x',  1),
+      ArrowLeft:  () => jogStart('x', -1),
+      ArrowUp:    () => jogStart('y',  1),
+      ArrowDown:  () => jogStart('y', -1),
+    };
+    const keyStopMap = {
+      ArrowRight: () => jogStop('x'),
+      ArrowLeft:  () => jogStop('x'),
+      ArrowUp:    () => jogStop('y'),
+      ArrowDown:  () => jogStop('y'),
+    };
+
+    document.addEventListener('keydown', e => {
+      if (!jogEnabled) return;
+      if (keyMap[e.key]) { e.preventDefault(); keyMap[e.key](); }
+    });
+    document.addEventListener('keyup', e => {
+      if (keyStopMap[e.key]) { e.preventDefault(); keyStopMap[e.key](); }
+    });
+
+    // -- Knob handler --
+    function onKnob(rpcName, slider, valueId) {
+      const v = parseFloat(slider.value).toFixed(1);
+      document.getElementById(valueId).textContent = v;
+      send(rpcName, v);
+    }
+
+    // -- Reset all sliders for an axis to 0 --
+    function resetAxis(axis) {
+      const controls = {
+        x: [
+          { rpc: 'set_x_amplitude', id: 'val-x-amplitude' },
+          { rpc: 'set_x_frequency', id: 'val-x-frequency' },
+          { rpc: 'set_speed_x',     id: 'val-speed-x'     },
+        ],
+        y: [
+          { rpc: 'set_y_amplitude', id: 'val-y-amplitude' },
+          { rpc: 'set_y_frequency', id: 'val-y-frequency' },
+          { rpc: 'set_speed_y',     id: 'val-speed-y'     },
+        ],
+        z: [
+          { rpc: 'set_z_amplitude', id: 'val-z-amplitude' },
+          { rpc: 'set_z_frequency', id: 'val-z-frequency' },
+          { rpc: 'set_speed_z',     id: 'val-speed-z'     },
+        ],
+        e: [
+          { rpc: 'set_e_amplitude', id: 'val-e-amplitude' },
+          { rpc: 'set_e_frequency', id: 'val-e-frequency' },
+          { rpc: 'set_speed_e',     id: 'val-speed-e'     },
+        ],
+      };
+
+      const panel = document.querySelector(`.axis-panel.${axis}`);
+      panel.querySelectorAll('input[type="range"]').forEach(s => s.value = 0);
+      controls[axis].forEach(c => {
+        document.getElementById(c.id).textContent = '0.0';
+        send(c.rpc, 0);
+      });
+    }
+
+    // -- UI helpers --
+    function setStatus(text, connected) {
+      const el = document.getElementById('status-text');
+      el.textContent = text;
+      el.style.color = connected ? '#0f9' : '#f66';
+      const btn = document.getElementById('connect-btn');
+      btn.classList.toggle('connected', connected);
+      if (connected) btn.textContent = 'Connected';
+    }
+
+    function log(msg, type = 'info') {
+      const logEl = document.getElementById('log');
+      const p = document.createElement('p');
+      p.className = type;
+      p.textContent = msg;
+      logEl.appendChild(p);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    // ============================================================
+    // PATTERN GENERATOR
+    // ============================================================
+
+    const patternRowIds = ['curve-x', 'curve-y', 'circle', 'spiral', 'rect'];
+
+    // The "speed" slider for each pattern (targeted by [ ] keyboard shortcut)
+    const patternSpeedKnob = {
+      'curve-x': 'ps-cx-freq',
+      'curve-y': 'ps-cy-freq',
+      'circle':  'ps-ci-speed',
+      'spiral':  'ps-sp-rot',
+      'rect':    'ps-rt-xspeed',
+    };
+
+    let activePatternRow = null; // 1-5
+    let runningPattern   = null;
+
+    // -- Value display helpers --
+    function updatePVal(valId, slider) {
+      document.getElementById(valId).textContent = parseFloat(slider.value).toFixed(1);
+    }
+    function updatePValSuffix(valId, slider, suffix, decimals) {
+      const v = parseFloat(slider.value);
+      document.getElementById(valId).textContent = (decimals === 0 ? Math.round(v) : v.toFixed(decimals)) + suffix;
+    }
+
+    // -- Row selection --
+    function selectPatternRow(idx) {
+      activePatternRow = idx;
+      patternRowIds.forEach((id, i) => {
+        document.getElementById('prow-' + id).classList.toggle('active-pattern', i + 1 === idx);
+      });
+    }
+
+    // -- Apply pattern: maps pattern params to x/y/z/e RPCs --
+    function applyPattern(name) {
+      if (runningPattern && runningPattern !== name) {
+        const prev = document.getElementById('papply-' + runningPattern);
+        if (prev) prev.classList.remove('running');
+      }
+      runningPattern = name;
+      document.getElementById('papply-' + name).classList.add('running');
+
+      switch (name) {
+        case 'curve-x': {
+          const freq  = parseFloat(document.getElementById('ps-cx-freq').value);
+          const amp   = parseFloat(document.getElementById('ps-cx-amp').value);
+          const phase = parseFloat(document.getElementById('ps-cx-phase').value);
+          const speed = parseFloat(document.getElementById('ps-cx-speed').value);
+          send('set_x_frequency', freq);
+          send('set_x_amplitude', amp);
+          send('set_x_phase',     phase);
+          send('set_speed_x',     speed);
+          break;
+        }
+        case 'curve-y': {
+          const freq  = parseFloat(document.getElementById('ps-cy-freq').value);
+          const amp   = parseFloat(document.getElementById('ps-cy-amp').value);
+          const phase = parseFloat(document.getElementById('ps-cy-phase').value);
+          const speed = parseFloat(document.getElementById('ps-cy-speed').value);
+          send('set_y_frequency', freq);
+          send('set_y_amplitude', amp);
+          send('set_y_phase',     phase);
+          send('set_speed_y',     speed);
+          break;
+        }
+        case 'circle': {
+          const radius = parseFloat(document.getElementById('ps-ci-radius').value);
+          const speed  = parseFloat(document.getElementById('ps-ci-speed').value);
+          send('set_x_amplitude', radius);
+          send('set_y_amplitude', radius);
+          send('set_x_frequency', speed);
+          send('set_y_frequency', speed);
+          send('set_x_phase',  0);
+          send('set_y_phase', 90);  // 90° offset creates circular motion
+          break;
+        }
+        case 'spiral': {
+          const rotSpeed  = parseFloat(document.getElementById('ps-sp-rot').value);
+          const elevSpeed = parseFloat(document.getElementById('ps-sp-elev').value);
+          const levels    = parseFloat(document.getElementById('ps-sp-levels').value);
+          send('set_x_frequency', rotSpeed);
+          send('set_y_frequency', rotSpeed);
+          send('set_x_phase',  0);
+          send('set_y_phase', 90);
+          send('set_speed_z',    elevSpeed);
+          send('set_z_amplitude', levels);  // levels controls total Z height
+          break;
+        }
+        case 'rect': {
+          const xSpeed     = parseFloat(document.getElementById('ps-rt-xspeed').value);
+          const stepHeight = parseFloat(document.getElementById('ps-rt-step').value);
+          const zSpeed     = parseFloat(document.getElementById('ps-rt-zspeed').value);
+          const retract    = parseFloat(document.getElementById('ps-rt-retract').value);
+          send('set_speed_x',      xSpeed);
+          send('set_z_amplitude',  stepHeight);
+          send('set_speed_z',      zSpeed);
+          send('set_rect_retract', retract);
+          break;
+        }
+      }
+      log('pattern applied: ' + name, 'info');
+    }
+
+    // -- Stop pattern: zeros out the relevant axes --
+    function stopPattern(name) {
+      const btn = document.getElementById('papply-' + name);
+      if (btn) btn.classList.remove('running');
+      if (runningPattern === name) runningPattern = null;
+
+      switch (name) {
+        case 'curve-x':
+          send('set_x_frequency', 0); send('set_x_amplitude', 0);
+          send('set_x_phase', 0);     send('set_speed_x', 0);
+          break;
+        case 'curve-y':
+          send('set_y_frequency', 0); send('set_y_amplitude', 0);
+          send('set_y_phase', 0);     send('set_speed_y', 0);
+          break;
+        case 'circle':
+          send('set_x_amplitude', 0); send('set_y_amplitude', 0);
+          send('set_x_frequency', 0); send('set_y_frequency', 0);
+          break;
+        case 'spiral':
+          send('set_x_frequency', 0); send('set_y_frequency', 0);
+          send('set_speed_z', 0);     send('set_z_amplitude', 0);
+          break;
+        case 'rect':
+          send('set_speed_x', 0); send('set_speed_z', 0);
+          send('set_z_amplitude', 0); send('set_rect_retract', 0);
+          break;
+      }
+      log('pattern stopped: ' + name, 'info');
+    }
+
+    // -- Pattern keyboard shortcuts (separate from jog keys) --
+    document.addEventListener('keydown', e => {
+      // Ignore if inside a text input
+      if (e.target.tagName === 'INPUT' && e.target.type === 'text') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      // 1-5: select pattern row
+      if (e.key >= '1' && e.key <= '5') {
+        selectPatternRow(parseInt(e.key));
+        e.preventDefault();
+        return;
+      }
+
+      // [ ] : decrease / increase speed of the selected pattern
+      if ((e.key === '[' || e.key === ']') && activePatternRow !== null) {
+        const patName  = patternRowIds[activePatternRow - 1];
+        const slider   = document.getElementById(patternSpeedKnob[patName]);
+        if (!slider) return;
+        const step  = parseFloat(slider.step) || 0.1;
+        const delta = step * 5 * (e.key === ']' ? 1 : -1);
+        slider.value = Math.min(parseFloat(slider.max),
+                       Math.max(parseFloat(slider.min), parseFloat(slider.value) + delta));
+        slider.dispatchEvent(new Event('input'));
+        if (runningPattern === patName) applyPattern(patName);
+        e.preventDefault();
+        return;
+      }
+
+      // Enter: apply the selected pattern
+      if (e.key === 'Enter' && activePatternRow !== null) {
+        applyPattern(patternRowIds[activePatternRow - 1]);
+        e.preventDefault();
+        return;
+      }
+
+      // Escape: stop the running pattern
+      if (e.key === 'Escape' && runningPattern !== null) {
+        stopPattern(runningPattern);
+        e.preventDefault();
+      }
+    });
+
+    // ============================================================
+    // CANVAS PREVIEWS
+    // ============================================================
+
+    function drawCurveX() {
+      const canvas = document.getElementById('canvas-curve-x');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const freq  = parseFloat(document.getElementById('ps-cx-freq').value);
+      const amp   = parseFloat(document.getElementById('ps-cx-amp').value);
+      const phase = parseFloat(document.getElementById('ps-cx-phase').value) * Math.PI / 180;
+      const ampPx = (amp / 20) * (H / 2 - 5);
+      const cy    = H / 2;
+
+      // center line
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+
+      // sine wave
+      ctx.strokeStyle = '#f66';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#f66';
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      for (let px = 0; px < W; px++) {
+        const t = (px / W) * Math.PI * 2 * Math.max(0.5, freq / 3);
+        const y = cy - ampPx * Math.sin(t + phase);
+        px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawCurveY() {
+      const canvas = document.getElementById('canvas-curve-y');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const freq  = parseFloat(document.getElementById('ps-cy-freq').value);
+      const amp   = parseFloat(document.getElementById('ps-cy-amp').value);
+      const phase = parseFloat(document.getElementById('ps-cy-phase').value) * Math.PI / 180;
+      const ampPx = (amp / 20) * (H / 2 - 5);
+      const cy    = H / 2;
+
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(W, cy); ctx.stroke();
+
+      ctx.strokeStyle = '#6af';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#6af';
+      ctx.shadowBlur = 5;
+      ctx.beginPath();
+      for (let px = 0; px < W; px++) {
+        const t = (px / W) * Math.PI * 2 * Math.max(0.5, freq / 3);
+        const y = cy - ampPx * Math.sin(t + phase);
+        px === 0 ? ctx.moveTo(px, y) : ctx.lineTo(px, y);
+      }
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    function drawCircle() {
+      const canvas = document.getElementById('canvas-circle');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const radius = parseFloat(document.getElementById('ps-ci-radius').value);
+      const cx = W / 2, cy = H / 2;
+      const r  = Math.max(1, (radius / 20) * (Math.min(W, H) / 2 - 6));
+
+      // orbit path
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 0.5;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([]);
+
+      // circle
+      ctx.strokeStyle = '#f90';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#f90';
+      ctx.shadowBlur = 6;
+      ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.stroke();
+
+      // dot at start position
+      ctx.fillStyle = '#f90';
+      ctx.shadowBlur = 3;
+      ctx.beginPath(); ctx.arc(cx + r, cy, 3, 0, Math.PI * 2); ctx.fill();
+
+      // center cross
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = '#333';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx - 4, cy); ctx.lineTo(cx + 4, cy);
+      ctx.moveTo(cx, cy - 4); ctx.lineTo(cx, cy + 4);
+      ctx.stroke();
+    }
+
+    function drawSpiral() {
+      const canvas = document.getElementById('canvas-spiral');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const levels = parseInt(document.getElementById('ps-sp-levels').value);
+      const cx = W / 2, cy = H / 2;
+      const maxR  = Math.min(W, H) / 2 - 5;
+      const steps = levels * 80;
+
+      ctx.strokeStyle = '#6f6';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#6f6';
+      ctx.shadowBlur = 4;
+      ctx.beginPath();
+      for (let i = 0; i <= steps; i++) {
+        const t     = i / steps;
+        const angle = t * levels * Math.PI * 2;
+        const r     = maxR * (1 - t);
+        const x = cx + r * Math.cos(angle);
+        const y = cy + r * Math.sin(angle);
+        i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+
+      // center dot
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#6f6';
+      ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI * 2); ctx.fill();
+    }
+
+    function drawRect() {
+      // Pattern: oscillate Z at fixed X → retract Z → advance X → repeat
+      // Side view: X = horizontal, Z = vertical
+      const canvas = document.getElementById('canvas-rect');
+      const ctx = canvas.getContext('2d');
+      const W = canvas.width, H = canvas.height;
+      ctx.clearRect(0, 0, W, H);
+
+      const zHeight = parseFloat(document.getElementById('ps-rt-step').value);
+      const retract = parseFloat(document.getElementById('ps-rt-retract').value);
+      const numSpikes = 5;
+      const m = 8;
+      const usableW  = W - 2 * m;
+      const usableH  = H - 2 * m;
+      const spacing  = usableW / numSpikes;
+      const baseY    = H - m;                                    // Z = 0
+      const peakY    = baseY - (zHeight / 20) * usableH;        // Z peak
+      const retractY = baseY - (retract / 20) * usableH;        // retract level
+
+      // Z=0 baseline
+      ctx.strokeStyle = '#252525';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(m, baseY); ctx.lineTo(W - m, baseY); ctx.stroke();
+
+      // retract level guide (dashed)
+      if (retractY < baseY - 2) {
+        ctx.setLineDash([3, 4]);
+        ctx.strokeStyle = '#3a2850';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(m, retractY); ctx.lineTo(W - m, retractY); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+
+      // path: for each X point — rise to peak, fall to retract, advance X
+      ctx.strokeStyle = '#c9f';
+      ctx.lineWidth = 1.5;
+      ctx.shadowColor = '#c9f';
+      ctx.shadowBlur = 3;
+      ctx.beginPath();
+
+      let x = m;
+      ctx.moveTo(x, baseY);                   // start at X=0, Z=0
+
+      for (let i = 0; i < numSpikes; i++) {
+        ctx.lineTo(x, peakY);                 // oscillate up
+        ctx.lineTo(x, retractY);              // retract (partial return)
+        if (i < numSpikes - 1) {
+          x += spacing;
+          ctx.lineTo(x, retractY);            // advance X at retract height
+        }
+      }
+      ctx.stroke();
+
+      // start dot
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#c9f';
+      ctx.beginPath(); ctx.arc(m, baseY, 3, 0, Math.PI * 2); ctx.fill();
+    }
+
+    // Draw all previews on load
+    drawCurveX(); drawCurveY(); drawCircle(); drawSpiral(); drawRect();
+  </script>
+
+</body>
+</html>
