@@ -112,13 +112,9 @@ The UI is a single HTML file with no dependencies beyond Web Serial. The operato
 
 ## Videos
 
-**Final controls demo**
+<video src="assets/pencil-iteration.MOV" controls width="100%"></video>
 
-<video src="assets/final_controls.mp4" controls width="100%"></video>
-
-**Final result**
-
-<video src="assets/final_result.mp4" controls width="100%"></video>
+<video src="assets/final-result.MOV" controls width="100%"></video>
 
 ---
 
