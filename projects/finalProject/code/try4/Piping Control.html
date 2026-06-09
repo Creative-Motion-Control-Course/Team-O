@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Piping Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root{
+    --bg: #eceef2;
+    --ink: #2a2d36;
+    --muted: #6c717d;
+    --faint: #99a0ad;
+    --card: rgba(255,255,255,0.60);
+    --card-strong: rgba(255,255,255,0.80);
+    --line: rgba(45,55,75,0.12);
+    --line-strong: rgba(45,55,75,0.22);
+    --shadow: 0 18px 48px -24px rgba(38,48,72,0.34), 0 3px 10px -6px rgba(38,48,72,0.16);
+    --shadow-sm: 0 6px 18px -11px rgba(38,48,72,0.30);
+    --accent: #5b7196;
+    --accent-2: #6c7088;
+    --accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
+    --good: #4bb185;
+    --bad: #d6737b;
+    --radius: 16px;
+    --radius-sm: 12px;
+    --cloud: 0.5;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+    --sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+
+    /* blob colors (muted, cool) */
+    --b1: #8aa6c8; --b2: #84b3ad; --b3: #a8c1a6; --b4: #c6a3b2; --b5: #a7a6c6; --b6: #cbb89c;
+  }
+
+  /* ---- tweak-driven form ---- */
+  body[data-corners="sharp"]{ --radius: 10px; --radius-sm: 8px; }
+  body[data-corners="soft"]{ --radius: 24px; --radius-sm: 16px; }
+  body[data-type="sans"]{ --sans: system-ui, -apple-system, 'Segoe UI', Helvetica, sans-serif; }
+  body[data-surface="solid"]{ --card: #fbfcfd; --card-strong: #ffffff; }
+
+  html, body{ height: 100%; }
+  body{
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* ---- cloudy blob field ---- */
+  .blobs{ position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; opacity: var(--cloud); transition: opacity .25s; }
+  .blobs::after{ /* faint grain/vignette to keep it from being flat */
+    content:""; position:absolute; inset:0;
+    background: radial-gradient(120% 90% at 50% 10%, transparent 45%, rgba(38,48,72,0.05) 100%);
+  }
+  .blob{ position: absolute; border-radius: 50%; filter: blur(76px); opacity: 0.5; }
+  .blob.a{ width: 46vw; height: 46vw; left: -10vw; top: -12vw; background: radial-gradient(circle at 35% 35%, var(--b1), transparent 68%); }
+  .blob.b{ width: 40vw; height: 40vw; right: -8vw; top: -10vw; background: radial-gradient(circle at 60% 40%, var(--b4), transparent 66%); opacity:0.46; }
+  .blob.c{ width: 42vw; height: 42vw; left: 4vw; bottom: -18vw; background: radial-gradient(circle at 50% 50%, var(--b3), transparent 66%); opacity:0.42; }
+  .blob.d{ width: 38vw; height: 38vw; right: 2vw; bottom: -14vw; background: radial-gradient(circle at 45% 45%, var(--b5), transparent 66%); opacity:0.44; }
+  .blob.e{ width: 24vw; height: 24vw; left: 30vw; top: 24vh; background: radial-gradient(circle at 50% 50%, var(--b2), transparent 64%); opacity:0.3; }
+  .blob.f{ width: 22vw; height: 22vw; left: 20vw; bottom: 4vh; background: radial-gradient(circle at 50% 50%, var(--b6), transparent 64%); opacity:0.32; }
+
+  /* ---- review bar ---- */
+  .reviewbar{
+    position: relative; z-index: 5;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 16px; padding: 16px 30px 0;
+    max-width: 1320px; margin: 0 auto;
+  }
+  .brand{ display: flex; align-items: center; gap: 11px; }
+  .brand-dot{ width: 13px; height: 13px; border-radius: 50%;
+    background: conic-gradient(from 200deg, var(--b4), var(--b5), var(--b1), var(--b2), var(--b4)); }
+  .brand b{ font-weight: 600; font-size: 0.92rem; letter-spacing: -0.01em; }
+  .brand span{ color: var(--faint); font-weight: 500; font-size: 0.92rem; }
+  .review-tools{ display: flex; align-items: center; gap: 16px; }
+  .review-hint{ font-size: 0.78rem; color: var(--faint); font-weight: 500; letter-spacing: 0.01em;
+    display: flex; gap: 5px; align-items: center; }
+  .review-hint b{ color: var(--muted); font-weight: 600; }
+  .seg{ display: flex; background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 3px; box-shadow: var(--shadow-sm); backdrop-filter: blur(12px); }
+  .seg button{ border: 0; background: transparent; font-family: var(--sans); font-weight: 500; font-size: 0.78rem; color: var(--muted);
+    padding: 6px 14px; border-radius: 999px; cursor: pointer; transition: .18s; letter-spacing: 0.01em; }
+  .seg button.on{ background: var(--ink); color: #fff; }
+  .swatches{ display: flex; gap: 7px; align-items: center; }
+  .swatch{ width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: var(--shadow-sm); transition: transform .15s; }
+  .swatch:hover{ transform: scale(1.12); }
+  .swatch.on{ outline: 2px solid var(--ink); outline-offset: 2px; }
+  .sw-blush{ background: linear-gradient(135deg, #e87f97, #9079d6); }
+  .sw-lagoon{ background: linear-gradient(135deg, #38b3ad, #5aa7e9); }
+  .sw-sunset{ background: linear-gradient(135deg, #ef9a6a, #e87f97); }
+
+  /* ---- stage / layout ---- */
+  .stage{
+    position: relative; z-index: 4;
+    max-width: 1320px; margin: 0 auto; padding: 20px 30px 48px;
+    display: grid; gap: 20px;
+    grid-template-columns: 1.5fr 1fr;
+    align-items: start;
+  }
+  .col{ display: grid; gap: 20px; align-content: start; }
+
+  body[data-layout="stack"] .stage{ grid-template-columns: minmax(0, 660px); justify-content: center; }
+  body[data-layout="stack"] .col{ display: contents; }
+  body[data-layout="stack"] .col-right > *:nth-child(1){ order: 1; } /* connection */
+  body[data-layout="stack"] .col-left  > section:nth-child(1){ order: 2; } /* patterns */
+  body[data-layout="stack"] .col-left  > section:nth-child(2){ order: 3; } /* preview */
+  body[data-layout="stack"] .col-right > *:nth-child(2){ order: 4; } /* controls */
+  body[data-layout="stack"] .col-right > *:nth-child(3){ order: 5; } /* run/stop */
+  body[data-layout="stack"] .col-right > *:nth-child(4){ order: 6; } /* log */
+  body[data-layout="stack"] .col-right > *:nth-child(5){ order: 7; } /* advanced */
+
+  /* ---- cards ---- */
+  .card{
+    background: var(--card); backdrop-filter: blur(20px) saturate(1.15); -webkit-backdrop-filter: blur(20px) saturate(1.15);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 22px;
+  }
+  .card-title{ font-size: 0.74rem; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+  .card-head{ display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .card-sub{ font-family: var(--mono); font-size: 0.68rem; color: var(--faint); letter-spacing: 0.02em; white-space: nowrap; }
+
+  /* ---- patterns ---- */
+  .pattern-list{ display: grid; gap: 12px; }
+  .pattern{ border: 1px solid var(--line); border-radius: var(--radius-sm); background: var(--card-strong);
+    overflow: hidden; transition: border-color .2s, box-shadow .2s, background .2s; }
+  .pattern.on{ border-color: color-mix(in oklab, var(--accent) 55%, transparent); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .pattern-head{ width: 100%; display: flex; align-items: center; gap: 15px; padding: 15px 17px; cursor: pointer;
+    background: transparent; border: 0; text-align: left; font-family: var(--sans); }
+  .pattern-num{ flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center;
+    font-weight: 600; font-size: 1.05rem; color: var(--muted); background: rgba(120,108,156,0.10); border: 1px solid var(--line); transition: .2s; }
+  .pattern.on .pattern-num{ color: #fff; border-color: transparent;
+    background: linear-gradient(140deg, var(--accent), var(--accent-2)); box-shadow: var(--shadow-sm); }
+  .pattern-meta{ display: flex; flex-direction: column; gap: 2px; flex: 1; }
+  .pattern-name{ font-weight: 600; font-size: 1.02rem; letter-spacing: -0.01em; color: var(--ink); }
+  .pattern-desc{ font-size: 0.8rem; color: var(--muted); }
+  .pattern-check{ flex: none; width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line-strong); transition: .2s; position: relative; }
+  .pattern.on .pattern-check{ border-color: var(--accent); background: var(--accent); }
+  .pattern.on .pattern-check::after{ content:""; position:absolute; left: 6px; top: 3px; width: 5px; height: 9px;
+    border: solid #fff; border-width: 0 2.5px 2.5px 0; transform: rotate(42deg); }
+  .pattern-body{ display: none; padding: 4px 18px 20px; }
+  .pattern.on .pattern-body{ display: block; }
+  .knob-row{ display: flex; flex-wrap: wrap; gap: 22px 18px; padding-top: 8px; }
+  .pattern-note{ font-size: 0.82rem; color: var(--muted); line-height: 1.5; padding: 10px 14px; border-radius: 12px;
+    background: rgba(120,108,156,0.08); border: 1px solid var(--line); }
+
+  /* ---- knob ---- */
+  .knob{ display: flex; flex-direction: column; align-items: center; gap: 8px; width: 92px; user-select: none; }
+  .knob-dial{ width: 76px; height: 76px; cursor: ns-resize; position: relative; touch-action: none; }
+  .knob-dial svg{ display: block; width: 100%; height: 100%; overflow: visible; }
+  .knob-track{ fill: none; stroke: rgba(120,108,156,0.20); stroke-width: 6; stroke-linecap: round; }
+  .knob-arc{ fill: none; stroke: var(--accent); stroke-width: 6; stroke-linecap: round; transition: stroke .2s; }
+  .knob-body{ fill: url(#knobgrad); stroke: rgba(255,255,255,0.95); stroke-width: 1.5; filter: drop-shadow(0 3px 6px rgba(50,62,86,0.18)); }
+  .knob-ind{ stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+  .knob-hub{ fill: var(--accent); }
+  .knob-cap{ font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); text-align: center; }
+  .knob-val{ font-family: var(--mono); font-size: 0.84rem; font-weight: 500; color: var(--ink); display: flex; align-items: baseline; gap: 3px; }
+  .knob-val .unit{ font-size: 0.64rem; color: var(--faint); font-weight: 400; }
+  .knob-val input{ width: 52px; font-family: var(--mono); font-size: 0.82rem; text-align: center; border: 1px solid var(--accent);
+    border-radius: 7px; padding: 1px 2px; color: var(--ink); background: #fff; outline: none; }
+
+  /* ---- preview ---- */
+  .preview-wrap{ position: relative; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--line);
+    background: linear-gradient(180deg, rgba(255,255,255,0.5), rgba(255,255,255,0.25)); }
+  #preview-canvas{ display: block; width: 100%; height: auto; }
+  .readout{ position: absolute; left: 14px; bottom: 12px; display: flex; gap: 14px; align-items: center;
+    background: rgba(44,39,66,0.78); color: #fff; padding: 8px 14px; border-radius: 12px; backdrop-filter: blur(8px);
+    font-family: var(--mono); font-size: 0.82rem; box-shadow: var(--shadow-sm); }
+  .readout .ax{ display: flex; gap: 5px; align-items: baseline; }
+  .readout .ax b{ color: rgba(255,255,255,0.55); font-weight: 500; font-size: 0.72rem; }
+  .preview-state{ position: absolute; right: 14px; top: 12px; display: flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.78); padding: 6px 12px; border-radius: 999px; font-size: 0.74rem; font-weight: 600;
+    color: var(--muted); box-shadow: var(--shadow-sm); }
+  .preview-state .dot{ width: 8px; height: 8px; border-radius: 50%; background: var(--faint); }
+  .preview-state.running{ color: var(--ink); }
+  .preview-state.running .dot{ background: var(--good); box-shadow: 0 0 0 4px color-mix(in oklab, var(--good) 22%, transparent); animation: pulse 1.4s infinite; }
+  @keyframes pulse{ 50%{ box-shadow: 0 0 0 7px color-mix(in oklab, var(--good) 8%, transparent); } }
+
+  /* ---- connection ---- */
+  .conn{ display: flex; align-items: center; gap: 13px; }
+  .conn-light{ width: 14px; height: 14px; border-radius: 50%; background: var(--bad); flex: none;
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--bad) 16%, transparent); transition: .25s; }
+  body.connected .conn-light{ background: var(--good); box-shadow: 0 0 0 4px color-mix(in oklab, var(--good) 18%, transparent); }
+  .conn-text{ flex: 1; }
+  .conn-text b{ display: block; font-size: 0.98rem; font-weight: 600; }
+  .conn-text span{ font-family: var(--mono); font-size: 0.7rem; color: var(--faint); }
+  .btn{ font-family: var(--sans); font-weight: 600; cursor: pointer; border: 1px solid var(--line-strong);
+    background: var(--card-strong); color: var(--ink); border-radius: 12px; padding: 10px 18px; font-size: 0.86rem; transition: .18s;
+    position: relative; z-index: 1; isolation: isolate; }
+  .btn:hover{ border-color: var(--accent); box-shadow: var(--shadow-sm); }
+  .btn.primary{ background: linear-gradient(140deg, var(--accent), var(--accent-2)); color: #fff; border-color: transparent; }
+  .btn.primary:hover{ filter: brightness(1.05); box-shadow: var(--shadow); }
+  .btn.ghost{ background: transparent; }
+  .btn.sm{ padding: 7px 13px; font-size: 0.78rem; font-weight: 500; border-radius: 10px; }
+
+  /* ---- controls ---- */
+  .control-grid{ display: grid; gap: 20px; }
+  .jog-toprow{ display: flex; align-items: center; justify-content: space-between; gap: 14px; }
+  .switch{ display: inline-flex; align-items: center; gap: 10px; cursor: pointer; }
+  .switch .track{ width: 46px; height: 27px; border-radius: 999px; background: rgba(120,108,156,0.26); position: relative; transition: .2s; flex: none; }
+  .switch .knobby{ position: absolute; top: 3px; left: 3px; width: 21px; height: 21px; border-radius: 50%; background: #fff; box-shadow: var(--shadow-sm); transition: .2s; }
+  .switch.on .track{ background: var(--accent); }
+  .switch.on .knobby{ left: 22px; }
+  .switch .lbl{ font-weight: 600; font-size: 0.88rem; }
+  .switch .lbl small{ display:block; font-weight: 500; font-size: 0.7rem; color: var(--faint); }
+
+  .jog-pads{ display: flex; gap: 22px; align-items: flex-start; }
+  .jog-block{ display: flex; flex-direction: column; align-items: center; gap: 9px; }
+  .jog-block .jlabel{ font-size: 0.7rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+  .arrow-grid{ display: grid; grid-template-columns: repeat(3, 46px); grid-template-rows: repeat(3, 46px); gap: 6px; }
+  .pad{ width: 46px; height: 46px; border-radius: 12px; border: 1px solid var(--line); background: var(--card-strong);
+    color: var(--muted); display: grid; place-items: center; cursor: pointer; transition: .12s; user-select: none; font-size: 1.05rem; }
+  .pad:hover{ border-color: var(--accent); color: var(--ink); }
+  .pad.active{ background: linear-gradient(140deg, var(--accent), var(--accent-2)); color: #fff; border-color: transparent; box-shadow: var(--shadow-sm); }
+  .pad.empty{ border: 0; background: transparent; cursor: default; }
+  .pad.center{ border-style: dashed; border-color: var(--line); cursor: default; color: var(--faint); font-size: 0.7rem; }
+  .pad.tall{ height: 46px; }
+  .z-col{ display: grid; grid-template-rows: repeat(2, 46px); gap: 6px; }
+  .jog-disabled .pad:not(.empty):not(.center){ opacity: 0.4; pointer-events: none; }
+
+  .keyhints{ display: flex; flex-wrap: wrap; gap: 8px; }
+  .keyhint{ display: inline-flex; align-items: center; gap: 7px; font-size: 0.74rem; color: var(--muted);
+    background: rgba(120,108,156,0.07); border: 1px solid var(--line); border-radius: 9px; padding: 5px 9px; }
+  .kbd{ font-family: var(--mono); font-size: 0.7rem; font-weight: 600; color: var(--ink); background: #fff;
+    border: 1px solid var(--line-strong); border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; min-width: 20px; text-align: center; }
+  .ctrl-bottom{ display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+  .e-jog{ display: flex; align-items: center; gap: 10px; }
+  .e-jog .pad{ width: 50px; height: 44px; font-size: 0.82rem; font-weight: 600; font-family: var(--mono); }
+
+  .divider{ height: 1px; background: var(--line); margin: 2px 0; }
+
+  /* ---- run / stop ---- */
+  .runstop{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .big-btn{ font-family: var(--sans); font-weight: 700; font-size: 1.08rem; letter-spacing: 0.01em; cursor: pointer;
+    border: 1px solid transparent; border-radius: 999px; padding: 18px; transition: .16s; display: flex; align-items: center; justify-content: center; gap: 10px;
+    position: relative; z-index: 1; isolation: isolate; }
+  .big-btn .ic{ width: 18px; height: 18px; display: inline-block; }
+  .big-run{ background: linear-gradient(140deg, #5fd49a, #36b07f); color: #fff; border-color: rgba(255,255,255,0.35); box-shadow: var(--shadow-sm); }
+  .big-run:hover{ filter: brightness(1.04); }
+  .big-run.is-running{ animation: runglow 1.8s infinite; }
+  @keyframes runglow{ 50%{ box-shadow: 0 0 0 4px color-mix(in oklab, var(--good) 26%, transparent); } }
+  .big-stop{ background: #ffffff; color: var(--bad); border-color: color-mix(in oklab, var(--bad) 45%, transparent); box-shadow: var(--shadow-sm); }
+  .big-stop:hover{ background: color-mix(in oklab, var(--bad) 10%, #ffffff); border-color: var(--bad); }
+  .big-btn:disabled{ opacity: 0.45; cursor: not-allowed; filter: none; }
+
+  /* ---- collapsibles ---- */
+  .collapse-head{ width: 100%; display: flex; align-items: center; justify-content: space-between; cursor: pointer;
+    background: transparent; border: 0; font-family: var(--sans); padding: 0; }
+  .chev{ width: 16px; height: 16px; transition: transform .2s; color: var(--muted); }
+  .card.open .chev{ transform: rotate(90deg); }
+  .collapse-body{ display: none; margin-top: 16px; }
+  .card.open .collapse-body{ display: block; }
+  #log{ font-family: var(--mono); font-size: 0.72rem; line-height: 1.65; height: 180px; overflow-y: auto;
+    background: rgba(44,39,66,0.05); border: 1px solid var(--line); border-radius: 12px; padding: 10px 13px; }
+  #log p{ word-break: break-all; }
+  #log .sent{ color: var(--accent-2); }
+  #log .info{ color: var(--muted); }
+  #log .error{ color: var(--bad); }
+  #log .rx{ color: var(--good); }
+  .adv-grid{ display: flex; flex-wrap: wrap; gap: 10px; }
+  .readout-mini{ display: flex; align-items: center; justify-content: space-between; margin-top: 14px;
+    font-family: var(--mono); font-size: 0.74rem; color: var(--muted); padding: 8px 12px; border-radius: 10px; background: rgba(120,108,156,0.07); }
+  .readout-mini b{ color: var(--ink); font-weight: 600; }
+
+  @media (max-width: 920px){
+    .stage{ grid-template-columns: minmax(0,1fr) !important; }
+    .col-right{ order: -1; }
+  }
+</style>
+</head>
+<body data-layout="split" data-corners="medium" data-type="grotesk" data-surface="frosted">
+
+  <div class="blobs">
+    <div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>
+    <div class="blob d"></div><div class="blob e"></div><div class="blob f"></div>
+  </div>
+
+  <div class="reviewbar">
+    <div class="brand">
+      <span class="brand-dot"></span>
+      <b>Edible Patterns</b><span>&nbsp;/ Final Project CMC Spring 2026 - By Jon Crezenzo & Italo Rojas</span>
+    </div>
+  </div>
+
+  <main class="stage">
+    <!-- ===== LEFT COLUMN ===== -->
+    <div class="col col-left">
+
+      <!-- PATTERNS -->
+      <section class="card" data-screen-label="Patterns">
+        <div class="card-head">
+          <span class="card-title">Step 1: Head Type</span>
+          <span class="card-sub">Pick one tip type</span>
+        </div>
+        <div class="pattern-list" id="pattern-list">
+
+          <div class="pattern on" data-pattern="regular">
+            <button class="pattern-head">
+              <span class="pattern-num">1</span>
+              <span class="pattern-meta">
+                <span class="pattern-name">Regular tip</span>
+                <span class="pattern-desc">Allow you to extrude a clean cylindrical shape</span>
+              </span>
+              <span class="pattern-check"></span>
+            </button>
+          </div>
+
+          <div class="pattern" data-pattern="big_star">
+            <button class="pattern-head">
+              <span class="pattern-num">2</span>
+              <span class="pattern-meta">
+                <span class="pattern-name">Big Star</span>
+                <span class="pattern-desc">Extrude a large star shape</span>
+              </span>
+              <span class="pattern-check"></span>
+            </button>
+          </div>
+
+          <div class="pattern" data-pattern="small_star">
+            <button class="pattern-head">
+              <span class="pattern-num">3</span>
+              <span class="pattern-meta">
+                <span class="pattern-name">Small Star</span>
+                <span class="pattern-desc">Extrude a small star shape</span>
+              </span>
+              <span class="pattern-check"></span>
+            </button>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- RADIUS AND SPEED SLIDER -->
+          </div>
+            <div class="sparam">
+            <div class="sparam-header">
+              <span class="control-label">Radius <span style="color:#444; font-size:0.65rem;">(applied on Start)</span></span>
+              <span class="control-value" id="val-spiral-radius">20.0</span>
+            </div>
+            <input type="range" id="spiral-radius-slider" min="15" max="25" step="0.5" value="20.0"
+                  oninput="document.getElementById('val-spiral-radius').textContent = parseFloat(this.value).toFixed(1)">
+          </div>
+        </div>
+
+      <!-- PREVIEW -->
+      <section class="card" data-screen-label="Preview">
+        <div class="card-head">
+          <span class="card-title">Print Preview</span>
+          <span class="card-sub">simulated XY path</span>
+        </div>
+        <div class="preview-wrap">
+          <canvas id="preview-canvas" width="1280" height="720"></canvas>
+          <div class="preview-state" id="preview-state"><span class="dot"></span><span id="preview-state-text">Idle</span></div>
+          <div class="readout">
+            <span class="ax"><b>X</b><span id="ro-x">0.0</span></span>
+            <span class="ax"><b>Y</b><span id="ro-y">0.0</span></span>
+            <span class="ax"><b>Z</b><span id="ro-z">40.0</span></span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <div class="col col-right">
+
+      <!-- CONNECTION -->
+      <section class="card" style="padding:18px 22px;">
+        <div class="conn">
+          <span class="conn-light"></span>
+          <span class="conn-text">
+            <b id="conn-label">Disconnected</b>
+            <span id="conn-sub">Web Serial · 115200 baud</span>
+          </span>
+          <button class="btn primary" id="connect-btn">Connect</button>
+        </div>
+      </section>
+
+      <!-- CONTROLS -->
+      <section class="card" data-screen-label="Controls">
+        <div class="card-head">
+          <button class="collapse-head" id="log-toggle">
+          <span class="card-title">Manual Controls</span>
+          <span class="card-sub">jog the nozzle</span>
+        </div>
+
+        <div class="control-grid">
+          <div class="jog-toprow">
+            <div class="switch" id="jog-switch">
+              <span class="track"><span class="knobby"></span></span>
+              <span class="lbl">Jog mode<small id="jog-state-lbl">off — keys disabled</small></span>
+            </div>
+            <div id="jog-speed-knob"></div>
+          </div>
+
+          <div class="jog-pads">
+            <div class="jog-block">
+              <div class="arrow-grid" id="xy-grid">
+                <div class="pad empty"></div>
+                <div class="pad" data-jog="y" data-dir="1">&#9650;</div>
+                <div class="pad empty"></div>
+                <div class="pad" data-jog="x" data-dir="-1">&#9664;</div>
+                <div class="pad center">XY</div>
+                <div class="pad" data-jog="x" data-dir="1">&#9654;</div>
+                <div class="pad empty"></div>
+                <div class="pad" data-jog="y" data-dir="-1">&#9660;</div>
+                <div class="pad empty"></div>
+              </div>
+              <span class="jlabel">X / Y</span>
+            </div>
+
+            <div class="jog-block">
+              <div class="z-col" id="z-grid">
+                <div class="pad" data-jog="z" data-dir="1">&#9650;</div>
+                <div class="pad" data-jog="z" data-dir="-1">&#9660;</div>
+              </div>
+              <span class="jlabel">Z</span>
+            </div>
+
+            <div class="jog-block">
+              <div class="z-col" id="e-grid">
+                <div class="pad" data-jog="e" data-dir="1">E&#8593;</div>
+                <div class="pad" data-jog="e" data-dir="-1">E&#8595;</div>
+              </div>
+              <span class="jlabel">Extrude</span>
+            </div>
+          </div>
+
+          <div class="keyhints">
+            <span class="keyhint"><span class="kbd">&#8593;</span><span class="kbd">&#8595;</span><span class="kbd">&#8592;</span><span class="kbd">&#8594;</span> move X / Y</span>
+            <span class="keyhint"><span class="kbd">W</span><span class="kbd">S</span> raise / lower Z</span>
+            <span class="keyhint"><span class="kbd">E</span><span class="kbd">D</span> extrude</span>
+          </div>
+
+          <div class="readout-mini">
+            <span>Analog knob (A1)</span>
+            <b id="analog-a1-value">—</b>
+          </div>
+        </div>
+      </section>
+
+      <!-- RUN / STOP -->
+      <div class="runstop">
+        <button class="big-btn big-run" id="run-btn">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Run
+        </button>
+        <button class="big-btn big-stop" id="stop-btn">
+          <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Stop
+        </button>
+      </div>
+
+      <!-- SERIAL LOG -->
+      <section class="card" id="log-card" style="padding:18px 22px;">
+        <button class="collapse-head" id="log-toggle">
+          <span class="card-title">Serial log</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="collapse-body">
+          <div id="log"><p class="info">serial log will appear here…</p></div>
+        </div>
+      </section>
+
+      <!-- ADVANCED -->
+      <section class="card" id="adv-card" style="padding:18px 22px;">
+        <button class="collapse-head" id="adv-toggle">
+          <span class="card-title">Advanced</span>
+          <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <div class="collapse-body">
+          <div class="adv-grid">
+            <button class="btn sm" id="enable-e-btn">Enable E</button>
+            <button class="btn sm" id="disable-e-btn">Disable E</button>
+            <button class="btn sm" id="step-e-btn">Step E Jog</button>
+            <button class="btn sm" id="hello-btn">Ping (hello)</button>
+            <button class="btn sm ghost" id="disconnect-btn">Disconnect</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- shared SVG gradient for knob bodies -->
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <radialGradient id="knobgrad" cx="35%" cy="30%" r="80%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="55%" stop-color="#eef1f5"/>
+      <stop offset="100%" stop-color="#dfe4ec"/>
+    </radialGradient>
+  </defs></svg>
+
+  <script src="panel.js"></script>
+  <script src="tweaks.js"></script>
+</body>
+</html>

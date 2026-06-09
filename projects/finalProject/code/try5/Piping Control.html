@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Piping Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  *{ box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root{
+    --bg: #eceef2;
+    --ink: #2a2d36;
+    --muted: #6c717d;
+    --faint: #99a0ad;
+    --card: rgba(255,255,255,0.60);
+    --card-strong: rgba(255,255,255,0.80);
+    --line: rgba(45,55,75,0.12);
+    --line-strong: rgba(45,55,75,0.22);
+    --shadow: 0 18px 48px -24px rgba(38,48,72,0.34), 0 3px 10px -6px rgba(38,48,72,0.16);
+    --shadow-sm: 0 6px 18px -11px rgba(38,48,72,0.30);
+    --accent: #5b7196;
+    --accent-2: #6c7088;
+    --accent-soft: color-mix(in oklab, var(--accent) 16%, transparent);
+    --good: #4bb185;
+    --bad: #d6737b;
+    --radius: 16px;
+    --radius-sm: 12px;
+    --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+    --sans: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+    --b1: #8aa6c8; --b2: #84b3ad; --b3: #a8c1a6; --b4: #c6a3b2; --b5: #a7a6c6; --b6: #cbb89c;
+  }
+
+  html, body{ height: 100%; }
+  body{
+    background: var(--bg); color: var(--ink); font-family: var(--sans);
+    -webkit-font-smoothing: antialiased; min-height: 100vh;
+    position: relative; overflow-x: hidden;
+  }
+
+  /* ---- blobs ---- */
+  .blobs{ position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; opacity:0.5; }
+  .blobs::after{ content:""; position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 10%, transparent 45%, rgba(38,48,72,0.05) 100%); }
+  .blob{ position:absolute; border-radius:50%; filter:blur(76px); opacity:0.5; }
+  .blob.a{ width:46vw; height:46vw; left:-10vw; top:-12vw; background:radial-gradient(circle at 35% 35%,var(--b1),transparent 68%); }
+  .blob.b{ width:40vw; height:40vw; right:-8vw; top:-10vw; background:radial-gradient(circle at 60% 40%,var(--b4),transparent 66%); opacity:.46; }
+  .blob.c{ width:42vw; height:42vw; left:4vw; bottom:-18vw; background:radial-gradient(circle at 50% 50%,var(--b3),transparent 66%); opacity:.42; }
+  .blob.d{ width:38vw; height:38vw; right:2vw; bottom:-14vw; background:radial-gradient(circle at 45% 45%,var(--b5),transparent 66%); opacity:.44; }
+  .blob.e{ width:24vw; height:24vw; left:30vw; top:24vh; background:radial-gradient(circle at 50% 50%,var(--b2),transparent 64%); opacity:.3; }
+  .blob.f{ width:22vw; height:22vw; left:20vw; bottom:4vh; background:radial-gradient(circle at 50% 50%,var(--b6),transparent 64%); opacity:.32; }
+
+  /* ---- header ---- */
+  .topbar{
+    position:relative; z-index:5;
+    max-width:1320px; margin:0 auto; padding:16px 30px 0;
+    display:flex; align-items:center; gap:16px;
+  }
+  .brand{ display:flex; align-items:center; gap:11px; }
+  .brand-dot{ width:13px; height:13px; border-radius:50%;
+    background:conic-gradient(from 200deg,var(--b4),var(--b5),var(--b1),var(--b2),var(--b4)); }
+  .brand b{ font-weight:600; font-size:0.92rem; letter-spacing:-0.01em; }
+  .brand span{ color:var(--faint); font-weight:500; font-size:0.92rem; }
+
+  /* ---- step 1 connect bar (full width) ---- */
+  .connect-wrap{
+    position:relative; z-index:4;
+    max-width:1320px; margin:16px auto 0; padding:0 30px;
+  }
+  .connect-bar{
+    background:var(--card); backdrop-filter:blur(20px) saturate(1.15); -webkit-backdrop-filter:blur(20px) saturate(1.15);
+    border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow);
+    padding:16px 24px; display:flex; align-items:center; gap:20px;
+  }
+  .conn{ display:flex; align-items:center; gap:13px; flex:1; }
+  .conn-light{ width:14px; height:14px; border-radius:50%; background:var(--bad); flex:none;
+    box-shadow:0 0 0 4px color-mix(in oklab,var(--bad) 16%,transparent); transition:.25s; }
+  body.connected .conn-light{ background:var(--good); box-shadow:0 0 0 4px color-mix(in oklab,var(--good) 18%,transparent); }
+  .conn-text{ flex:1; }
+  .conn-text b{ display:block; font-size:0.98rem; font-weight:600; }
+  .conn-text span{ font-family:var(--mono); font-size:0.7rem; color:var(--faint); }
+
+  /* ---- layout ---- */
+  .stage{
+    position:relative; z-index:4;
+    max-width:1320px; margin:0 auto; padding:20px 30px 48px;
+    display:grid; gap:20px; grid-template-columns:1fr;
+  }
+
+  /* ---- step label ---- */
+  .step-label{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:0.68rem; font-weight:700; letter-spacing:0.18em; text-transform:uppercase; color:var(--faint);
+  }
+  .step-num{
+    width:20px; height:20px; border-radius:50%; border:1.5px solid var(--line-strong);
+    display:grid; place-items:center; font-size:0.65rem; font-weight:700; color:var(--muted); flex:none;
+  }
+  .card-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+
+  /* ---- cards ---- */
+  .card{
+    background:var(--card); backdrop-filter:blur(20px) saturate(1.15); -webkit-backdrop-filter:blur(20px) saturate(1.15);
+    border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); padding:22px;
+  }
+  .card-sub{ font-family:var(--mono); font-size:0.68rem; color:var(--faint); letter-spacing:0.02em; white-space:nowrap; }
+
+  /* ---- patterns ---- */
+  .pattern-list{ display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .pattern{ border:1px solid var(--line); border-radius:var(--radius-sm); background:var(--card-strong);
+    overflow:hidden; transition:border-color .2s, box-shadow .2s; }
+  .pattern.on{ border-color:color-mix(in oklab,var(--accent) 55%,transparent); box-shadow:0 0 0 3px var(--accent-soft); }
+  .pattern-head{ width:100%; display:flex; align-items:center; gap:15px; padding:15px 17px; cursor:pointer;
+    background:transparent; border:0; text-align:left; font-family:var(--sans); }
+  .pattern-num{ flex:none; width:38px; height:38px; border-radius:11px; display:grid; place-items:center;
+    font-weight:600; font-size:1.05rem; color:var(--muted); background:rgba(120,108,156,0.10); border:1px solid var(--line); transition:.2s; }
+  .pattern.on .pattern-num{ color:#fff; border-color:transparent;
+    background:linear-gradient(140deg,var(--accent),var(--accent-2)); box-shadow:var(--shadow-sm); }
+  .pattern-meta{ display:flex; flex-direction:column; gap:2px; flex:1; }
+  .pattern-name{ font-weight:600; font-size:1.02rem; letter-spacing:-0.01em; color:var(--ink); }
+  .pattern-desc{ font-size:0.8rem; color:var(--muted); }
+  .pattern-check{ flex:none; width:22px; height:22px; border-radius:50%; border:2px solid var(--line-strong); transition:.2s; position:relative; }
+  .pattern.on .pattern-check{ border-color:var(--accent); background:var(--accent); }
+  .pattern.on .pattern-check::after{ content:""; position:absolute; left:6px; top:3px; width:5px; height:9px;
+    border:solid #fff; border-width:0 2.5px 2.5px 0; transform:rotate(42deg); }
+  .pattern-body{ display:none; padding:4px 18px 18px; }
+  .pattern.on .pattern-body{ display:flex; flex-direction:column; align-items:flex-start; gap:10px; }
+  .pattern-body img{ width:100%; max-width:90px; object-fit:contain; border-radius:10px;
+    border:1px solid var(--line); background:#fff; padding:6px; }
+  .pattern-note{ font-size:0.78rem; color:var(--muted); line-height:1.5; padding:8px 12px; border-radius:10px;
+    background:rgba(120,108,156,0.08); border:1px solid var(--line); }
+
+  /* ---- params + preview two-column ---- */
+  .params-preview-grid{ display:grid; grid-template-columns:300px 1fr; gap:28px; align-items:start; }
+  .params-col{ display:grid; gap:24px; }
+
+  /* ---- sliders ---- */
+  .sparam{ }
+  .sparam-header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px; }
+  .control-label{ font-size:0.72rem; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; font-weight:600; }
+  .control-value{ font-family:var(--mono); font-size:0.88rem; color:var(--ink); font-weight:500; }
+  .sliders-row{ display:flex; gap:32px; align-items:flex-start; }
+  input[type="range"]{
+    -webkit-appearance:none; width:100%; height:4px; border-radius:2px;
+    background:rgba(120,108,156,0.22); outline:none; cursor:pointer;
+  }
+  input[type="range"]::-webkit-slider-thumb{
+    -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+    background:#fff; border:2px solid var(--accent); cursor:pointer;
+    box-shadow:var(--shadow-sm); transition:transform .12s;
+  }
+  input[type="range"]::-webkit-slider-thumb:hover{ transform:scale(1.15); }
+
+  /* ---- preview ---- */
+  .preview-wrap{ position:relative; border-radius:var(--radius-sm); overflow:hidden; border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(255,255,255,0.5),rgba(255,255,255,0.25)); }
+  #preview-canvas{ display:block; width:100%; height:auto; }
+.preview-state{ position:absolute; right:14px; top:12px; display:flex; align-items:center; gap:7px;
+    background:rgba(255,255,255,0.78); padding:6px 12px; border-radius:999px; font-size:0.74rem; font-weight:600;
+    color:var(--muted); box-shadow:var(--shadow-sm); }
+  .preview-state .dot{ width:8px; height:8px; border-radius:50%; background:var(--faint); }
+  .preview-state.running .dot{ background:var(--good); box-shadow:0 0 0 4px color-mix(in oklab,var(--good) 22%,transparent); animation:pulse 1.4s infinite; }
+  @keyframes pulse{ 50%{ box-shadow:0 0 0 7px color-mix(in oklab,var(--good) 8%,transparent); } }
+
+  /* ---- buttons ---- */
+  .btn{ font-family:var(--sans); font-weight:600; cursor:pointer; border:1px solid var(--line-strong);
+    background:var(--card-strong); color:var(--ink); border-radius:12px; padding:10px 18px; font-size:0.86rem; transition:.18s; }
+  .btn:hover{ border-color:var(--accent); box-shadow:var(--shadow-sm); }
+  .btn.primary{ background:linear-gradient(140deg,var(--accent),var(--accent-2)); color:#fff; border-color:transparent; }
+  .btn.primary:hover{ filter:brightness(1.05); box-shadow:var(--shadow); }
+  .btn.ghost{ background:transparent; }
+  .btn.sm{ padding:7px 13px; font-size:0.78rem; font-weight:500; border-radius:10px; }
+
+  /* ---- run / stop ---- */
+  .runstop{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .big-btn{ font-family:var(--sans); font-weight:700; font-size:1rem; letter-spacing:0.01em; cursor:pointer;
+    border:1px solid transparent; border-radius:999px; padding:14px 10px; transition:.16s;
+    display:flex; align-items:center; justify-content:center; gap:8px; }
+  .big-btn .ic{ width:16px; height:16px; flex:none; }
+  .big-run{ background:linear-gradient(140deg,#5fd49a,#36b07f); color:#fff; border-color:rgba(255,255,255,0.35); box-shadow:var(--shadow-sm); }
+  .big-run:hover{ filter:brightness(1.04); }
+  .big-run.is-running{ animation:runglow 1.8s infinite; }
+  @keyframes runglow{ 50%{ box-shadow:0 0 0 4px color-mix(in oklab,var(--good) 26%,transparent); } }
+  .big-stop{ background:#ffffff; color:var(--bad); border-color:color-mix(in oklab,var(--bad) 45%,transparent); box-shadow:var(--shadow-sm); }
+  .big-stop:hover{ background:color-mix(in oklab,var(--bad) 10%,#ffffff); border-color:var(--bad); }
+  .big-btn:disabled{ opacity:0.45; cursor:not-allowed; filter:none; }
+
+  /* ---- controls two-panel scheme ---- */
+  .scheme-panels{ display:grid; grid-template-columns:1fr 1px 1fr; gap:0 18px; align-items:start; }
+  .scheme-divider{ background:var(--line); align-self:stretch; }
+  .scheme-title{
+    font-size:0.68rem; font-weight:700; letter-spacing:0.16em; text-transform:uppercase;
+    color:var(--faint); margin-bottom:14px;
+  }
+
+  /* ---- jog ---- */
+  .jog-section{ display:grid; gap:14px; }
+.jog-pads{ display:flex; gap:16px; align-items:flex-start; }
+  .jog-block{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .jlabel{ font-size:0.66rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); }
+  .arrow-grid{ display:grid; grid-template-columns:repeat(3,42px); grid-template-rows:repeat(3,42px); gap:5px; }
+  .pad{ width:42px; height:42px; border-radius:11px; border:1px solid var(--line); background:var(--card-strong);
+    color:var(--muted); display:grid; place-items:center; cursor:pointer; transition:.12s; user-select:none; font-size:1rem; }
+  .pad:hover{ border-color:var(--accent); color:var(--ink); }
+  .pad.active{ background:linear-gradient(140deg,var(--accent),var(--accent-2)); color:#fff; border-color:transparent; box-shadow:var(--shadow-sm); }
+  .pad.empty{ border:0; background:transparent; cursor:default; }
+  .pad.center{ border-style:dashed; border-color:var(--line); cursor:default; color:var(--faint); font-size:0.68rem; }
+  .z-col{ display:grid; grid-template-rows:repeat(2,42px); gap:5px; }
+.keyhints{ display:flex; flex-wrap:wrap; gap:6px; }
+  .keyhint{ display:inline-flex; align-items:center; gap:6px; font-size:0.7rem; color:var(--muted);
+    background:rgba(120,108,156,0.07); border:1px solid var(--line); border-radius:8px; padding:4px 8px; }
+  .kbd{ font-family:var(--mono); font-size:0.66rem; font-weight:600; color:var(--ink); background:#fff;
+    border:1px solid var(--line-strong); border-bottom-width:2px; border-radius:5px; padding:1px 5px; min-width:18px; text-align:center; }
+
+  /* ---- joystick panel ---- */
+  .joystick-wrap{ display:block; width:100%; }
+  .joystick-wrap img{ width:100%; border-radius:var(--radius-sm); border:1px solid var(--line); display:block; }
+
+  /* ---- collapsibles ---- */
+  .collapse-head{ width:100%; display:flex; align-items:center; justify-content:space-between; cursor:pointer;
+    background:transparent; border:0; font-family:var(--sans); padding:0; }
+  .chev{ width:16px; height:16px; transition:transform .2s; color:var(--muted); flex:none; }
+  .card.open .chev{ transform:rotate(90deg); }
+  .collapse-body{ display:none; margin-top:16px; }
+  .card.open .collapse-body{ display:block; }
+
+  /* ---- advanced / log ---- */
+  .adv-section{ display:grid; gap:14px; }
+  .adv-grid{ display:flex; flex-wrap:wrap; gap:10px; }
+  .jog-speed-wrap{ display:flex; flex-direction:column; gap:6px; }
+  .jog-speed-wrap label{ font-size:0.68rem; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase;
+    font-weight:600; display:flex; justify-content:space-between; }
+  .jog-speed-wrap label span{ font-family:var(--mono); color:var(--ink); }
+  #log{ font-family:var(--mono); font-size:0.72rem; line-height:1.65; height:160px; overflow-y:auto;
+    background:rgba(44,39,66,0.05); border:1px solid var(--line); border-radius:12px; padding:10px 13px; }
+  #log p{ word-break:break-all; margin-bottom:1px; }
+  #log .sent{ color:var(--accent-2); }
+  #log .info{ color:var(--muted); }
+  #log .error{ color:var(--bad); }
+  .adv-label{ font-size:0.66rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--faint); }
+  .divider{ height:1px; background:var(--line); }
+
+  @media(max-width:920px){
+    .scheme-panels{ grid-template-columns:1fr; }
+    .scheme-divider{ display:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blobs">
+  <div class="blob a"></div><div class="blob b"></div><div class="blob c"></div>
+  <div class="blob d"></div><div class="blob e"></div><div class="blob f"></div>
+</div>
+
+<!-- header -->
+<div class="topbar">
+  <div class="brand">
+    <span class="brand-dot"></span>
+    <b>Edible Patterns</b><span>&nbsp;/ Final Project CMC Spring 2026 — Jon Crezenzo &amp; Italo Rojas</span>
+  </div>
+</div>
+
+<!-- STEP 1: CONNECT (full width) -->
+<div class="connect-wrap">
+  <div class="connect-bar">
+    <span class="step-label"><span class="step-num">1</span>Connect</span>
+    <div class="conn">
+      <span class="conn-light"></span>
+      <span class="conn-text">
+        <b id="conn-label">Disconnected</b>
+        <span id="conn-sub">Web Serial · 115200 baud</span>
+      </span>
+    </div>
+    <button class="btn primary" id="connect-btn">Connect</button>
+  </div>
+</div>
+
+<main class="stage">
+
+    <!-- STEP 2: HEAD TYPE -->
+    <section class="card">
+      <div class="card-head">
+        <span class="step-label"><span class="step-num">2</span>Head Type</span>
+        <span class="card-sub">pick one tip before printing</span>
+      </div>
+      <div class="pattern-list" id="pattern-list">
+
+        <div class="pattern on" data-pattern="regular">
+          <button class="pattern-head">
+            <span class="pattern-num">1</span>
+            <span class="pattern-meta">
+              <span class="pattern-name">Regular Tip</span>
+              <span class="pattern-desc">Clean cylindrical extrusion</span>
+            </span>
+            <span class="pattern-check"></span>
+          </button>
+          <div class="pattern-body">
+            <img src="../../docs/assets/type1_regular.png" alt="Regular tip" />
+            <span class="pattern-note">Sets <b>channel_c ratio 1:200</b> and extrusion multiplier <b>0.48</b></span>
+          </div>
+        </div>
+
+        <div class="pattern" data-pattern="big_star">
+          <button class="pattern-head">
+            <span class="pattern-num">2</span>
+            <span class="pattern-meta">
+              <span class="pattern-name">Big Star</span>
+              <span class="pattern-desc">Large star-shaped extrusion</span>
+            </span>
+            <span class="pattern-check"></span>
+          </button>
+          <div class="pattern-body">
+            <img src="../../docs/assets/type2_big_star.png" alt="Big star tip" />
+            <span class="pattern-note">Sets <b>channel_c ratio 1:600</b> and extrusion multiplier <b>0.98</b></span>
+          </div>
+        </div>
+
+        <div class="pattern" data-pattern="small_star">
+          <button class="pattern-head">
+            <span class="pattern-num">3</span>
+            <span class="pattern-meta">
+              <span class="pattern-name">Small Star</span>
+              <span class="pattern-desc">Fine star-shaped extrusion</span>
+            </span>
+            <span class="pattern-check"></span>
+          </button>
+          <div class="pattern-body">
+            <img src="../../docs/assets/type3_small_star.png" alt="Small star tip" />
+            <span class="pattern-note">Sets <b>channel_c ratio 1:400</b> and extrusion multiplier <b>0.78</b></span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- STEP 3: SPIRAL PARAMETERS + PREVIEW -->
+    <section class="card">
+      <div class="card-head">
+        <span class="step-label"><span class="step-num">3</span>Spiral Parameters</span>
+        <span class="card-sub">speed is live · radius applies on Start</span>
+      </div>
+      <div class="params-preview-grid">
+        <!-- sliders column -->
+        <div class="params-col">
+          <div class="sparam">
+            <div class="sparam-header">
+              <span class="control-label">Rotation Speed</span>
+              <span class="control-value" id="val-spiral-speed">1.3</span>
+            </div>
+            <input type="range" id="spiral-speed-slider" min="0" max="3" step="0.1" value="1.3"
+                   oninput="document.getElementById('val-spiral-speed').textContent = parseFloat(this.value).toFixed(1); send('set_spiral_speed', this.value)">
+          </div>
+          <div class="sparam">
+            <div class="sparam-header">
+              <span class="control-label">Radius</span>
+              <span class="control-value" id="val-spiral-radius">20.0</span>
+            </div>
+            <input type="range" id="spiral-radius-slider" min="15" max="25" step="0.5" value="20.0"
+                   oninput="document.getElementById('val-spiral-radius').textContent = parseFloat(this.value).toFixed(1); drawPreview()">
+          </div>
+        </div>
+        <!-- preview column -->
+        <div class="preview-wrap">
+          <canvas id="preview-canvas" width="1280" height="560"></canvas>
+          <div class="preview-state" id="preview-state"><span class="dot"></span><span id="preview-state-text">Idle</span></div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- STEP 4: CONTROLS (collapsible, open by default) -->
+    <section class="card open" id="controls-card">
+      <button class="collapse-head" id="controls-toggle">
+        <span class="step-label"><span class="step-num">4</span>Controls</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="collapse-body">
+        <div class="scheme-panels">
+
+          <!-- LEFT SCHEME: Keyboard / UI -->
+          <div class="scheme-panel">
+            <div class="scheme-title">Keyboard / UI</div>
+            <div class="jog-section">
+
+              <!-- Run / Stop -->
+              <div class="runstop">
+                <button class="big-btn big-run" id="run-btn">
+                  <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Run
+                </button>
+                <button class="big-btn big-stop" id="stop-btn">
+                  <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Stop
+                </button>
+              </div>
+
+              <!-- Jog pads -->
+              <div class="jog-pads" id="jog-pads">
+                <div class="jog-block">
+                  <div class="arrow-grid">
+                    <div class="pad empty"></div>
+                    <div class="pad" data-jog="y" data-dir="1">&#9650;</div>
+                    <div class="pad empty"></div>
+                    <div class="pad" data-jog="x" data-dir="-1">&#9664;</div>
+                    <div class="pad center">XY</div>
+                    <div class="pad" data-jog="x" data-dir="1">&#9654;</div>
+                    <div class="pad empty"></div>
+                    <div class="pad" data-jog="y" data-dir="-1">&#9660;</div>
+                    <div class="pad empty"></div>
+                  </div>
+                  <span class="jlabel">X / Y</span>
+                </div>
+                <div class="jog-block">
+                  <div class="z-col">
+                    <div class="pad" data-jog="z" data-dir="1">&#9650;</div>
+                    <div class="pad" data-jog="z" data-dir="-1">&#9660;</div>
+                  </div>
+                  <span class="jlabel">Z</span>
+                </div>
+                <div class="jog-block">
+                  <div class="z-col">
+                    <div class="pad" data-jog="e" data-dir="1">E&#8593;</div>
+                    <div class="pad" data-jog="e" data-dir="-1">E&#8595;</div>
+                  </div>
+                  <span class="jlabel">Extrude</span>
+                </div>
+              </div>
+
+              <!-- Key hints -->
+              <div class="keyhints">
+                <span class="keyhint"><span class="kbd">&#8593;</span><span class="kbd">&#8595;</span><span class="kbd">&#8592;</span><span class="kbd">&#8594;</span> X/Y</span>
+                <span class="keyhint"><span class="kbd">W</span><span class="kbd">S</span> Z</span>
+                <span class="keyhint"><span class="kbd">E</span><span class="kbd">D</span> Extrude</span>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="scheme-divider"></div>
+
+          <!-- RIGHT SCHEME: Joystick -->
+          <div class="scheme-panel">
+            <div class="scheme-title">Joystick</div>
+            <div class="joystick-wrap">
+              <img src="../../docs/assets/joystick.png" alt="Gamepad layout" />
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 5: ADVANCED (collapsible, closed by default) -->
+    <section class="card" id="adv-card" style="padding:18px 22px;">
+      <button class="collapse-head" id="adv-toggle">
+        <span class="step-label"><span class="step-num">5</span>Advanced</span>
+        <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="collapse-body">
+        <div class="adv-section">
+
+          <div>
+            <div class="adv-label" style="margin-bottom:10px;">Jog Speed</div>
+            <div class="jog-speed-wrap">
+              <label>Speed <span id="jog-speed-val">5.0</span></label>
+              <input type="range" id="jog-speed" min="0.5" max="20" step="0.5" value="5">
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <div class="adv-label" style="margin-bottom:10px;">Motor E</div>
+            <div class="adv-grid">
+              <button class="btn sm" id="enable-e-btn">Enable E</button>
+              <button class="btn sm" id="disable-e-btn">Disable E</button>
+              <button class="btn sm" id="step-e-btn">Step E Jog</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <div class="adv-label" style="margin-bottom:10px;">System</div>
+            <div class="adv-grid">
+              <button class="btn sm" id="hello-btn">Ping (hello)</button>
+              <button class="btn sm ghost" id="disconnect-btn">Disconnect</button>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <div class="adv-label" style="margin-bottom:10px;">Serial Log</div>
+            <div id="log"><p class="info">serial log will appear here…</p></div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+</main>
+
+<script>
+  // ─── State ───────────────────────────────────────────────────
+  let writer = null;
+  const jogActive = { x: false, y: false, z: false, e: false };
+
+  // ─── Serial Connection ────────────────────────────────────────
+  document.getElementById('connect-btn').addEventListener('click', async () => {
+    if (writer) { log('already connected', 'info'); return; }
+    try {
+      const port = await navigator.serial.requestPort();
+      await port.open({ baudRate: 115200 });
+      writer = port.writable.getWriter();
+      setConnected(true);
+      log('serial port opened at 115200', 'info');
+
+      const reader = port.readable.getReader();
+      (async () => {
+        const decoder = new TextDecoder();
+        let buffer = '';
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value);
+          const lines = buffer.split('\n');
+          buffer = lines.pop();
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            log('[teensy] ' + trimmed, 'info');
+          }
+        }
+      })();
+
+    } catch (err) {
+      setConnected(false);
+      log('connection failed: ' + err.message, 'error');
+    }
+  });
+
+  async function disconnect() {
+    if (!writer) { log('not connected', 'error'); return; }
+    try { await writer.close(); } catch (_) {}
+    writer = null;
+    setConnected(false);
+    log('disconnected', 'info');
+  }
+
+  // ─── RPC helpers ─────────────────────────────────────────────
+  async function send(name, value) {
+    if (!writer) { log('not connected', 'error'); return; }
+    const msg = JSON.stringify({ name, args: [parseFloat(value)] }) + '\n';
+    try { await writer.write(new TextEncoder().encode(msg)); log(msg.trim(), 'sent'); }
+    catch (err) { log('send error: ' + err.message, 'error'); }
+  }
+
+  async function sendCmd(name) {
+    if (!writer) { log('not connected', 'error'); return; }
+    const msg = JSON.stringify({ name }) + '\n';
+    try { await writer.write(new TextEncoder().encode(msg)); log(msg.trim(), 'sent'); }
+    catch (err) { log('send error: ' + err.message, 'error'); }
+  }
+
+  async function sendArgs(name, args) {
+    if (!writer) { log('not connected', 'error'); return; }
+    const msg = JSON.stringify({ name, args }) + '\n';
+    try { await writer.write(new TextEncoder().encode(msg)); log(msg.trim(), 'sent'); }
+    catch (err) { log('send error: ' + err.message, 'error'); }
+  }
+
+  function delay(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
+
+  // ─── Tip type ─────────────────────────────────────────────────
+  const tipTypeMap = { regular: 1, big_star: 2, small_star: 3 };
+
+  document.getElementById('pattern-list').addEventListener('click', e => {
+    const head = e.target.closest('.pattern-head');
+    if (!head) return;
+    const pattern = head.closest('.pattern');
+    document.querySelectorAll('#pattern-list .pattern').forEach(p => p.classList.remove('on'));
+    pattern.classList.add('on');
+    const t = tipTypeMap[pattern.dataset.pattern];
+    if (t) send('set_tip_type', t);
+  });
+
+  // ─── Spiral ───────────────────────────────────────────────────
+  function startSpiral() {
+    const speed  = parseFloat(document.getElementById('spiral-speed-slider').value);
+    const radius = parseFloat(document.getElementById('spiral-radius-slider').value);
+    document.getElementById('run-btn').classList.add('is-running');
+    document.getElementById('preview-state').classList.add('running');
+    document.getElementById('preview-state-text').textContent = 'Running';
+    sendArgs('start_spiral', [speed, radius]);
+  }
+
+  async function stopSpiral() {
+    document.getElementById('run-btn').classList.remove('is-running');
+    document.getElementById('preview-state').classList.remove('running');
+    document.getElementById('preview-state-text').textContent = 'Idle';
+    await sendCmd('stop_spiral');
+    await delay(100);
+    await sendArgs('step_z_jog', [-5]);
+    await delay(1100);
+    await sendArgs('step_z_jog', [20]);
+  }
+
+  document.getElementById('run-btn').addEventListener('click', startSpiral);
+  document.getElementById('stop-btn').addEventListener('click', stopSpiral);
+
+  // ─── Motor E ──────────────────────────────────────────────────
+  function enableE() {
+    document.getElementById('enable-e-btn').style.borderColor = 'var(--good)';
+    document.getElementById('enable-e-btn').style.color = 'var(--good)';
+    document.getElementById('disable-e-btn').style.borderColor = '';
+    document.getElementById('disable-e-btn').style.color = '';
+    sendCmd('enable_e');
+  }
+
+  function disableE() {
+    document.getElementById('disable-e-btn').style.borderColor = 'var(--bad)';
+    document.getElementById('disable-e-btn').style.color = 'var(--bad)';
+    document.getElementById('enable-e-btn').style.borderColor = '';
+    document.getElementById('enable-e-btn').style.color = '';
+    sendCmd('disable_e');
+  }
+
+  document.getElementById('enable-e-btn').addEventListener('click', enableE);
+  document.getElementById('disable-e-btn').addEventListener('click', disableE);
+  document.getElementById('step-e-btn').addEventListener('click', () => sendCmd('step_e_jog'));
+  document.getElementById('hello-btn').addEventListener('click', () => sendCmd('hello'));
+  document.getElementById('disconnect-btn').addEventListener('click', disconnect);
+
+  // ─── Jog ──────────────────────────────────────────────────────
+  document.getElementById('jog-speed').addEventListener('input', function () {
+    document.getElementById('jog-speed-val').textContent = parseFloat(this.value).toFixed(1);
+  });
+
+  function jogSpeed() { return parseFloat(document.getElementById('jog-speed').value); }
+
+  function jogStart(axis, dir) {
+    if (jogActive[axis]) return;
+    jogActive[axis] = true;
+    send('set_speed_' + axis, jogSpeed() * dir);
+  }
+
+  function jogStop(axis) {
+    if (!jogActive[axis]) return;
+    jogActive[axis] = false;
+    send('set_speed_' + axis, 0);
+  }
+
+  document.querySelectorAll('.pad[data-jog]').forEach(pad => {
+    const axis = pad.dataset.jog;
+    const dir  = parseInt(pad.dataset.dir);
+    pad.addEventListener('mousedown', () => { jogStart(axis, dir); pad.classList.add('active'); });
+    const stop = () => { jogStop(axis); pad.classList.remove('active'); };
+    pad.addEventListener('mouseup', stop);
+    pad.addEventListener('mouseleave', stop);
+  });
+
+  const keyMap = {
+    ArrowRight: ['x',  1], ArrowLeft:  ['x', -1],
+    ArrowUp:    ['y',  1], ArrowDown:  ['y', -1],
+    w: ['z',  1], s: ['z', -1],
+    e: ['e',  1], d: ['e', -1],
+  };
+  document.addEventListener('keydown', ev => {
+    const m = keyMap[ev.key];
+    if (m) { ev.preventDefault(); jogStart(m[0], m[1]); }
+  });
+  document.addEventListener('keyup', ev => {
+    const m = keyMap[ev.key];
+    if (m) jogStop(m[0]);
+  });
+
+  // ─── Collapsibles ─────────────────────────────────────────────
+  document.getElementById('controls-toggle').addEventListener('click', () =>
+    document.getElementById('controls-card').classList.toggle('open'));
+  document.getElementById('adv-toggle').addEventListener('click', () =>
+    document.getElementById('adv-card').classList.toggle('open'));
+
+  // ─── Gamepad ──────────────────────────────────────────────────
+  const DEADBAND   = 0.15;
+  const GP_SEND_HZ = 50;
+  let gpIndex    = null;
+  let gpLastSend = 0;
+  const gpPrev    = { x: 0, y: 0, z: 0, e: 0 };
+  const gpBtnPrev = {};
+
+  function applyDeadband(v) { return Math.abs(v) < DEADBAND ? 0 : v; }
+
+  function gpLoop(ts) {
+    requestAnimationFrame(gpLoop);
+    if (gpIndex === null) return;
+    if (ts - gpLastSend < GP_SEND_HZ) return;
+    gpLastSend = ts;
+
+    const gp = navigator.getGamepads()[gpIndex];
+    if (!gp) return;
+
+    const spd = jogSpeed();
+
+    // D-pad only for X/Y
+    let ax = 0, ay = 0;
+    if (gp.buttons[14]?.pressed) ax = -1;
+    if (gp.buttons[15]?.pressed) ax =  1;
+    if (gp.buttons[12]?.pressed) ay =  1;
+    if (gp.buttons[13]?.pressed) ay = -1;
+
+    // Right stick Y → Z
+    let az = applyDeadband(-(gp.axes[3] || 0));
+
+    const vx = parseFloat((ax * spd).toFixed(2));
+    const vy = parseFloat((ay * spd).toFixed(2));
+    const vz = parseFloat((az * spd).toFixed(2));
+
+    if (vx !== gpPrev.x) { send('set_speed_x', vx); gpPrev.x = vx; }
+    if (vy !== gpPrev.y) { send('set_speed_y', vy); gpPrev.y = vy; }
+    if (vz !== gpPrev.z) { send('set_speed_z', vz); gpPrev.z = vz; }
+
+    // Button 0 → Run (one-shot)
+    const btn0 = !!(gp.buttons[0]?.pressed);
+    if (btn0 && !gpBtnPrev[0]) startSpiral();
+    gpBtnPrev[0] = btn0;
+
+    // Button 2 → Stop (one-shot)
+    const btn2 = !!(gp.buttons[2]?.pressed);
+    if (btn2 && !gpBtnPrev[2]) stopSpiral();
+    gpBtnPrev[2] = btn2;
+
+    // Button 7 → +E, Button 5 → -E (held)
+    const btn7 = !!(gp.buttons[7]?.pressed);
+    const btn5 = !!(gp.buttons[5]?.pressed);
+    const ve = btn7 ? spd : btn5 ? -spd : 0;
+    if (ve !== gpPrev.e) { send('set_speed_e', ve); gpPrev.e = ve; }
+  }
+
+  window.addEventListener('gamepadconnected', e => {
+    gpIndex = e.gamepad.index;
+    log('gamepad connected [' + gpIndex + ']: ' + e.gamepad.id, 'info');
+  });
+  window.addEventListener('gamepaddisconnected', () => {
+    gpIndex = null;
+    log('gamepad disconnected', 'info');
+  });
+
+  requestAnimationFrame(gpLoop);
+
+  // ─── Preview canvas (radius footprint) ────────────────────────
+  const canvas = document.getElementById('preview-canvas');
+  const ctx    = canvas.getContext('2d');
+  const PX_PER_MM = 9;
+
+  function drawPreview() {
+    const W = canvas.width, H = canvas.height;
+    const cx = W / 2, cy = H / 2;
+    const r   = parseFloat(document.getElementById('spiral-radius-slider').value);
+    const rPx = r * PX_PER_MM;
+
+    ctx.clearRect(0, 0, W, H);
+
+    // grid (10 mm spacing)
+    const gridPx = 10 * PX_PER_MM;
+    ctx.strokeStyle = 'rgba(100,110,140,0.10)';
+    ctx.lineWidth = 1;
+    for (let x = cx % gridPx; x < W; x += gridPx) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+    for (let y = cy % gridPx; y < H; y += gridPx) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+
+    // centre cross
+    ctx.strokeStyle = 'rgba(100,110,140,0.22)';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx-18,cy); ctx.lineTo(cx+18,cy); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,cy-18); ctx.lineTo(cx,cy+18); ctx.stroke();
+
+    // filled footprint
+    ctx.beginPath();
+    ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(91,113,150,0.10)';
+    ctx.fill();
+
+    // outline
+    ctx.beginPath();
+    ctx.arc(cx, cy, rPx, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(91,113,150,0.65)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // dimension line
+    const lx = cx + rPx + 22;
+    ctx.strokeStyle = 'rgba(91,113,150,0.40)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath(); ctx.moveTo(lx, cy - rPx); ctx.lineTo(lx, cy + rPx); ctx.stroke();
+    ctx.setLineDash([]);
+    const tick = 6;
+    ctx.beginPath(); ctx.moveTo(lx-tick, cy-rPx); ctx.lineTo(lx+tick, cy-rPx); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(lx-tick, cy+rPx); ctx.lineTo(lx+tick, cy+rPx); ctx.stroke();
+
+    ctx.fillStyle = 'rgba(44,45,54,0.75)';
+    ctx.font = `600 ${Math.round(13*(W/640))}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText(`⌀ ${(r*2).toFixed(1)} mm`, lx + 10, cy);
+
+    ctx.fillStyle = 'rgba(91,113,150,0.70)';
+    ctx.font = `500 ${Math.round(11*(W/640))}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(`r = ${r.toFixed(1)} mm`, cx, cy + rPx * 0.55);
+
+    // scale bar
+    const barX = 28, barY = H - 28;
+    ctx.strokeStyle = 'rgba(100,110,140,0.45)'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(barX, barY); ctx.lineTo(barX+gridPx, barY); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(barX, barY-5); ctx.lineTo(barX, barY+5); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(barX+gridPx, barY-5); ctx.lineTo(barX+gridPx, barY+5); ctx.stroke();
+    ctx.fillStyle = 'rgba(100,110,140,0.65)';
+    ctx.font = `500 ${Math.round(10*(W/640))}px 'JetBrains Mono', monospace`;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+    ctx.fillText('10 mm', barX + gridPx/2, barY + 8);
+  }
+
+  drawPreview();
+
+  // ─── UI helpers ───────────────────────────────────────────────
+  function setConnected(on) {
+    document.body.classList.toggle('connected', on);
+    document.getElementById('conn-label').textContent  = on ? 'Connected' : 'Disconnected';
+    document.getElementById('conn-sub').textContent    = on ? 'Web Serial · 115200 baud · ready' : 'Web Serial · 115200 baud';
+    document.getElementById('connect-btn').textContent = on ? 'Connected' : 'Connect';
+    document.getElementById('connect-btn').classList.toggle('primary', !on);
+  }
+
+  function log(msg, type = 'info') {
+    const logEl = document.getElementById('log');
+    const p = document.createElement('p');
+    p.className = type;
+    p.textContent = msg;
+    logEl.appendChild(p);
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+</script>
+
+</body>
+</html>
