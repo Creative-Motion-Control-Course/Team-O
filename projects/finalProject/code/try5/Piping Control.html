@@ -448,6 +448,21 @@
           </div>
 
         </div>
+
+        <div class="divider" style="margin:18px 0;"></div>
+
+        <div>
+          <div class="scheme-title" style="margin-bottom:10px;">Refill</div>
+          <div class="runstop">
+            <button class="big-btn big-run" id="refill-btn">
+              <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>Refill (50s)
+            </button>
+            <button class="big-btn big-stop" id="refill-stop-btn">
+              <svg class="ic" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>Stop Refill
+            </button>
+          </div>
+        </div>
+
       </div>
     </section>
 
@@ -465,6 +480,16 @@
             <div class="jog-speed-wrap">
               <label>Speed <span id="jog-speed-val">5.0</span></label>
               <input type="range" id="jog-speed" min="0.5" max="20" step="0.5" value="5">
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <div>
+            <div class="adv-label" style="margin-bottom:10px;">Extrusion Speed</div>
+            <div class="jog-speed-wrap">
+              <label>Speed <span id="extrusion-speed-val">5.0</span></label>
+              <input type="range" id="extrusion-speed" min="0.5" max="120" step="0.5" value="5">
             </div>
           </div>
 
@@ -630,6 +655,29 @@
   document.getElementById('enable-e-btn').addEventListener('click', enableE);
   document.getElementById('disable-e-btn').addEventListener('click', disableE);
   document.getElementById('step-e-btn').addEventListener('click', () => sendCmd('step_e_jog'));
+
+  // ─── Refill ────────────────────────────────────────────────────
+  let refillTimer = null;
+
+  document.getElementById('refill-btn').addEventListener('click', () => {
+    if (refillTimer) clearTimeout(refillTimer);
+    send('set_speed_e', 120);
+    document.getElementById('refill-btn').classList.add('active');
+    log('refill started — will stop in 50s', 'info');
+    refillTimer = setTimeout(() => {
+      send('set_speed_e', 0);
+      document.getElementById('refill-btn').classList.remove('active');
+      log('refill complete', 'info');
+      refillTimer = null;
+    }, 50000);
+  });
+
+  document.getElementById('refill-stop-btn').addEventListener('click', () => {
+    if (refillTimer) { clearTimeout(refillTimer); refillTimer = null; }
+    send('set_speed_e', 0);
+    document.getElementById('refill-btn').classList.remove('active');
+    log('refill stopped', 'info');
+  });
   document.getElementById('hello-btn').addEventListener('click', () => sendCmd('hello'));
   document.getElementById('disconnect-btn').addEventListener('click', disconnect);
 
@@ -638,12 +686,18 @@
     document.getElementById('jog-speed-val').textContent = parseFloat(this.value).toFixed(1);
   });
 
+  document.getElementById('extrusion-speed').addEventListener('input', function () {
+    document.getElementById('extrusion-speed-val').textContent = parseFloat(this.value).toFixed(1);
+  });
+
   function jogSpeed() { return parseFloat(document.getElementById('jog-speed').value); }
+  function extrusionSpeed() { return parseFloat(document.getElementById('extrusion-speed').value); }
 
   function jogStart(axis, dir) {
     if (jogActive[axis]) return;
     jogActive[axis] = true;
-    send('set_speed_' + axis, jogSpeed() * dir);
+    const spd = axis === 'e' ? extrusionSpeed() : jogSpeed();
+    send('set_speed_' + axis, spd * dir);
   }
 
   function jogStop(axis) {
@@ -734,7 +788,8 @@
     // Button 7 → +E, Button 5 → -E (held)
     const btn7 = !!(gp.buttons[7]?.pressed);
     const btn5 = !!(gp.buttons[5]?.pressed);
-    const ve = btn7 ? spd : btn5 ? -spd : 0;
+    const espd = extrusionSpeed();
+    const ve = btn7 ? espd : btn5 ? -espd : 0;
     if (ve !== gpPrev.e) { send('set_speed_e', ve); gpPrev.e = ve; }
   }
 
