@@ -52,6 +52,7 @@ We had the meeting with Team Fish. First they showed us their work and next step
 
 # Final Project: Edible Patterns — Piping Machine
 
+
 ## System Overview
 
 The Edible Patterns machine is a modified Ender 3 3D printer adapted for food extrusion. The extrusion head holds a syringe mounted beside a stepper motor, driven by a lead screw that pushes the syringe plunger down. The Teensy 4.1 microcontroller runs the [Stepdance](https://stepdance.cc) library and communicates with a browser-based control UI over USB serial at 115200 baud using a JSON RPC protocol.
@@ -110,11 +111,16 @@ The UI is a single HTML file with no dependencies beyond Web Serial. The operato
 
 ---
 
-## Videos
+## Artifacts and Presentation
 
-<video src="assets/pencil-iteration.MOV" controls width="100%"></video>
+<!-- <video src="assets/pencil-iteration.MOV" controls width="100%"></video> -->
 
-<video src="assets/final-result.MOV" controls width="100%"></video>
+<!-- <video src="assets/final-result.MOV" controls width="100%"></video> -->
+
+[![Presentation Demo](https://youtu.be/O6iIW9jh3s/0.jpg)](https://youtu.be/O6iIW9jh3s)
+
+![Artifact](/assets/artifacts.JPG)
+
 
 ---
 
@@ -131,6 +137,94 @@ The spiral speed slider sends `set_spiral_speed` live while a print is running, 
 
 ---
 
+
+## Project Development 
+
+Continuing with our ideas on project 1, we decided to continue development of a extrusion device for cake piping. The ECL team devised a carriage, driven by a lead screw as the primary means of extrusion. 
+
+![Extrusion_Carriage](/assets/extrusion_frame.jpeg)
+
+Using the ECL team’s initial design, we then focused on the development of a mounting plate to hold a syringe. We modeled the syringes inside of Fusion to approximate the size in order to start building a mounting plate (cheese plate) to hold the syringe.
+
+![SyringeModel_Fusion1](/assets/syringe_model1.png)
+![SyringeModel_Fusion2](/assets/syringe_model2.png)
+
+
+Initially we used the "cheese plate” that Team Fish used as a mounting plate for the Ender printer. While this provided a rough prototype, our Ender plate was larger. That said, this provides important insights into the spatial and stability challenges of fixing the syringe. 
+
+![Measuring Cheese Plate](/assets/measuring1.jpeg)
+![Measuring Cheese Plate](/assets/measuring2.jpeg)
+![Measuring Cheese Plate](/assets/measuring4.jpeg)
+
+
+After printing our first modei, we quickly realized we need more space for the stepper to actually fit within the cavity as well as increasing its length for mounting the syringe. Additionally, we need to reinforce the top mounting plate for the stepper motor. After this we were able to actually mount the motor, by melting elongated holes through the model and fix metal tightening scraps. 
+
+![Fastening Straps](/assets/melting_model.jpeg)
+
+
+Once we recieved the two syringes, we decided to design and print two plates to hold and push the plunger down.
+
+![Syringe_Plunger1](/assets/syringe1_plunger_measure.jpeg)
+![Syringe_Plunger2](/assets/syringe2_plunger_measure.jpeg)
+
+
+One thing we noticed was that the larger cake piping device or donut frosting device required considerable initial force to push the plunger down. The plunger gets stuck due to friction inside of the cylinder.
+
+Therefore we chose the smaller cake piping syringe, as this provides a more constant level of force to move plunger downwards. We designed an insert and hook plate for the plunger to rest in and crudely drilled hole and screw to secure it.
+
+We designed and reprinted our 3D mounting plate and syringe holder.
+
+![Mounted_Mechanism](/assets/mouted_mechanism.jpeg)
+
+This led to one of our first extrusions tests. 
+
+![Mounted_Mechanism](/assets/extrusiontest1.jpeg)
+
+Throughout the project, we continued to use carboard and other material to stabilize the extrusion of the syringe. At this point, two encoders controlled the position of the x and y position (we periodically swamped out an encoder to adjust the height of the z-axis). The potentiometer controlled the extrusion rate, (the speed at which the lead rotates).
+
+
+For ease of use and testing, we generated a graphical user interface with Claude to provide a greater series of controls over the device. The GUI is written in javascript and connects via Serial Port to the stepdance board. 
+
+![Graphical User Interface](/assets/GUI_Claude.png)
+
+
+In order to create a rosette pattern, our next step was to create a spiral pattern within the stepdance library, working closely with Emilie and Jennifer.
+
+We programmed a circle, with a decreasing radius while increasing elevation of the z-axis. Within the stepdance library, we used the polar kinematics system with the position generator for the radius, velocity generator for the angle speed. The z-axis elevation or lift uses an angle input and outputs a target position. 
+
+[![Pencil Iteration](https://youtube.com/shorts/Hu7Tw80NFZI/0.jpg)](https://youtube.com/shorts/Hu7Tw80NFZI)
+
+
+Following this, we conducted a series of extrusion testing focused on determining an angle speed (revolutions per unit) and diameter size to produce a steady stream of extrusion. 
+
+[![Extrusion_Test_1](https://youtu.be/X74_okRHfZA/0.jpg)](https://youtu.be/X74_okRHfZA)
+
+[![Extrusion_Test_2](https://youtu.be/sxIhDkoLlHg/0.jpg)](https://youtu.be/sxIhDkoLlHg)
+
+
+Once we were able to accomplish this, we then moved to creating a series of analog controls for the user with the goal of having the user create a rosette. 
+
+In consultation with Emilie Yu, we decided to strip the GUI back to the essential controls of the digital interface in this case diameter and speed. 
+
+
+
+## Interface Control - UI and Controller 
+
+Circle Radius and Speed are set by screen based user interface. We chose the screen for this interaction to provide the user with a sense of scale and visual feedback. For the user they can see how their settings are reflected within the system. 
+
+The remote controller provides direct control over the positioning on (x, y, z). We speculated a game controller would work best as a control system of navigation. 
+
+Certainly, the remote allows the user to keep constant eye contact with the extrusion device as they command its positioning, where the user has to navigate the screen based UI additionally. 
+
+[![Testing_Analog_Controller](https://youtu.be/IfoJf7Bt9Q80.jpg)](https://youtu.be/IfoJf7Bt9Q8)
+
+
+The remote also gives the user control over the z-axis to make adjustments to the extrusion of the pattern design. This is particularly necessary with regards to food, such as donuts and cupcakes, which do not have a uniform flat surface. 
+
+For the user we decided that buttons on the control offered the best affordances in starting and stopping the spiral. As the user positions the nozzle, buttons on the controller provide the ability to start or stop these processes, a continuous workflow, rather than switching back to the screen based application. 
+
+
+
 ## Future Development
 
 - **Quick-change syringe mount** — The current syringe holder requires unscrewing to refill. A bayonet or quarter-turn locking collar would let operators swap a pre-filled syringe in seconds, which is critical for production use.
@@ -138,3 +232,6 @@ The spiral speed slider sends `set_spiral_speed` live while a print is running, 
 - **Automated point generation and curves** — Currently all non-spiral motion is manual jogging. A natural next step is to let the operator define a path (sequence of XY points or a Bézier curve) in the UI and have the machine execute it automatically with consistent speed and extrusion.
 
 - **Spherical / vertical-surface control** — A more ambitious extension would add two rotational axes to the head mount, giving spherical reach. Combined with a more viscous or fast-setting material this would allow extrusion on vertical surfaces — sides of cakes, 3D forms — rather than just the top plane.
+
+
+
