@@ -34,13 +34,11 @@ Since we need to adapt the joystick to receive two encoder signals, we decided t
 
 # Pictures and video
 
-![Cheese prototype](/assets/cheese_v1.jpeg)
 ![Holder 1](/assets/Holder1.jpeg)
 ![Holder 2](/assets/Holder2.jpeg)
 ![Measuring 1](/assets/measuring1.jpeg)
 ![Measuring 2](/assets/measuring2.jpeg)
 ![Measuring 3](/assets/measuring3.jpeg)
-![Measuring 4](/assets/measuring4.jpeg)
 
    
    
@@ -127,7 +125,7 @@ The UI is a single HTML file with no dependencies beyond Web Serial. The operato
 ## Relevance, Usability, and Responsiveness
 
 ### Relevance
-Cake decorating is a skilled craft where precision, repeatability, and speed matter. Professional pipers spend years developing muscle memory for consistent spiral patterns, rosettes, and dot work. Our machine makes this level of output accessible to anyone — a bakery operator can dial in a spiral size, select the right tip, and run repeatable decorations without manual piping skill. The output is immediately meaningful: it produces real edible decorations on real food, closing the loop between the machine and its creative purpose.
+Cake decorating is a skilled craft where precision, repeatability, and speed matter. Professional pipers spend years developing muscle memory for consistent spiral patterns, rosettes, and dot work. Our machine attempts to cake piping accessible and explore the ways a machine controlled system would create cake decorations. An operator can dial in a spiral size, select the right tip, and run repeatable decorations without manual piping skill. The output is immediately meaningful: it produces real edible decorations on real food, closing the loop between the machine and its creative purpose.
 
 ### Usability
 The interface is designed around the physical workflow rather than the machine's internal architecture. The operator does not need to know about stepper ratios or RPC calls — they pick a tip from a picture, set a radius on a slider with a live preview, and press Run. The keyboard jog controls map to spatial intuition (arrows = XY, W/S = Z up/down), and the gamepad mapping mirrors the same layout for operators who prefer physical controllers. Both input methods do exactly the same thing, giving users a familiar entry point regardless of their background. The system builds on skills that bakers already have — understanding tip shapes and approximate sizes — while the machine handles the precision.
@@ -138,7 +136,7 @@ The spiral speed slider sends `set_spiral_speed` live while a print is running, 
 ---
 
 
-## Project Development 
+## Project Development - Final 
 
 Continuing with our ideas on project 1, we decided to continue development of a extrusion device for cake piping. The ECL team devised a carriage, driven by a lead screw as the primary means of extrusion. 
 
@@ -146,42 +144,51 @@ Continuing with our ideas on project 1, we decided to continue development of a 
 
 Using the ECL team’s initial design, we then focused on the development of a mounting plate to hold a syringe. We modeled the syringes inside of Fusion to approximate the size in order to start building a mounting plate (cheese plate) to hold the syringe.
 
+![Measuring 4](/assets/measuring4.jpeg)
+
 ![SyringeModel_Fusion1](/assets/syringe_model1.png)
 ![SyringeModel_Fusion2](/assets/syringe_model2.png)
 
 
-Initially we used the "cheese plate” that Team Fish used as a mounting plate for the Ender printer. While this provided a rough prototype, our Ender plate was larger. That said, this provides important insights into the spatial and stability challenges of fixing the syringe. 
+Initially we used the "cheese plate” that Team Fish used as a mounting plate for the Ender printer. While this provided a rough prototype, our Ender plate was larger. That said, we 3D printed a syringe holder, which provided important insights into the spatial and stability challenges of fixing the syringe and motor. 
 
-![Measuring Cheese Plate](/assets/measuring1.jpeg)
-![Measuring Cheese Plate](/assets/measuring2.jpeg)
-![Measuring Cheese Plate](/assets/measuring4.jpeg)
+![Cheese prototype](/assets/cheese_v1.jpeg)
+
+We quickly realized we need more space for the stepper to actually fit within the cavity as well as increasing its length for mounting the syringe. 
 
 
-After printing our first modei, we quickly realized we need more space for the stepper to actually fit within the cavity as well as increasing its length for mounting the syringe. Additionally, we need to reinforce the top mounting plate for the stepper motor. After this we were able to actually mount the motor, by melting elongated holes through the model and fix metal tightening scraps. 
+Additionally, we need to reinforce the top mounting plate for the stepper motor. After this we were able to actually mount the motor, by melting elongated holes through the model and fix metal tightening scraps. 
 
 ![Fastening Straps](/assets/melting_model.jpeg)
 
 
-Once we recieved the two syringes, we decided to design and print two plates to hold and push the plunger down.
+Once we recieved the two syringes, we decided to measure the plungers design and print two plates to hold and push the plunger down. 
 
-![Syringe_Plunger1](/assets/syringe1_plunger_measure.jpeg)
-![Syringe_Plunger2](/assets/syringe2_plunger_measure.jpeg)
+![Syringe_Measure](/assets/plunger_measure.jpeg)
 
 
-One thing we noticed was that the larger cake piping device or donut frosting device required considerable initial force to push the plunger down. The plunger gets stuck due to friction inside of the cylinder.
+We then cardboard protoyped different holders for both syringes and 3D printed models. 
+
+![Syringe_Plunger1](/assets/cardboard_plunger.jpeg)
+![Syringe_Plunger1](/assets/fusion_plunger.jpeg)
+
+
+One thing we noticed was that the larger cake piping device or donut frosting syringe required considerable initial force to push the plunger down. The plunger gets stuck due to friction inside of the cylinder.
 
 Therefore we chose the smaller cake piping syringe, as this provides a more constant level of force to move plunger downwards. We designed an insert and hook plate for the plunger to rest in and crudely drilled hole and screw to secure it.
 
 We designed and reprinted our 3D mounting plate and syringe holder.
 
-![Mounted_Mechanism](/assets/mouted_mechanism.jpeg)
+![Mounted_Mechanism](/assets/mountedjpeg)
 
-This led to one of our first extrusions tests. 
+[![Modeling_CheesePlate](https://img.youtu.be/yTRx7rTqVcI/0.jpg)](https://youtu.be/yTRx7rTqVcI)
 
-![Mounted_Mechanism](/assets/extrusiontest1.jpeg)
 
-Throughout the project, we continued to use carboard and other material to stabilize the extrusion of the syringe. At this point, two encoders controlled the position of the x and y position (we periodically swamped out an encoder to adjust the height of the z-axis). The potentiometer controlled the extrusion rate, (the speed at which the lead rotates).
+This provide enought stability to conduct our first extrusions tests. 
 
+![Extrusion Test](/assets/extrusiontest1.jpeg)
+
+At this point, two encoders controlled the position of the x and y position (we periodically swamped out an encoder to adjust the height of the z-axis). The potentiometer controlled the extrusion rate, (the speed at which the lead rotates). Throughout the project, we continued to use carboard and other material to stabilize the extrusion of the syringe. 
 
 For ease of use and testing, we generated a graphical user interface with Claude to provide a greater series of controls over the device. The GUI is written in javascript and connects via Serial Port to the stepdance board. 
 
@@ -192,38 +199,43 @@ In order to create a rosette pattern, our next step was to create a spiral patte
 
 We programmed a circle, with a decreasing radius while increasing elevation of the z-axis. Within the stepdance library, we used the polar kinematics system with the position generator for the radius, velocity generator for the angle speed. The z-axis elevation or lift uses an angle input and outputs a target position. 
 
-[![Pencil Iteration](https://youtube.com/shorts/Hu7Tw80NFZI/0.jpg)](https://youtube.com/shorts/Hu7Tw80NFZI)
+We used a pencil to test the output.
+
+![Pencil Test](/assets/pencil_test.jpeg)
 
 
-Following this, we conducted a series of extrusion testing focused on determining an angle speed (revolutions per unit) and diameter size to produce a steady stream of extrusion. 
-
-[![Extrusion_Test_1](https://youtu.be/X74_okRHfZA/0.jpg)](https://youtu.be/X74_okRHfZA)
-
-[![Extrusion_Test_2](https://youtu.be/sxIhDkoLlHg/0.jpg)](https://youtu.be/sxIhDkoLlHg)
+[![Pencil Iteration](https://img.youtube.com/shorts/Hu7Tw80NFZI/0.jpg)](https://youtube.com/shorts/Hu7Tw80NFZI)
 
 
-Once we were able to accomplish this, we then moved to creating a series of analog controls for the user with the goal of having the user create a rosette. 
-
-In consultation with Emilie Yu, we decided to strip the GUI back to the essential controls of the digital interface in this case diameter and speed. 
+Following this, we conducted a series of extrusion testing focused on determining an angle speed (revolutions per unit) and diameter size to produce a steady stream of cake frosting extrusion. 
 
 
+[![Extrusion_Test_1](https://img.youtu.be/X74_okRHfZA/0.jpg)](https://youtu.be/X74_okRHfZA)
 
-## Interface Control - UI and Controller 
-
-Circle Radius and Speed are set by screen based user interface. We chose the screen for this interaction to provide the user with a sense of scale and visual feedback. For the user they can see how their settings are reflected within the system. 
-
-The remote controller provides direct control over the positioning on (x, y, z). We speculated a game controller would work best as a control system of navigation. 
-
-Certainly, the remote allows the user to keep constant eye contact with the extrusion device as they command its positioning, where the user has to navigate the screen based UI additionally. 
-
-[![Testing_Analog_Controller](https://youtu.be/IfoJf7Bt9Q80.jpg)](https://youtu.be/IfoJf7Bt9Q8)
+[![Extrusion_Test_2](https://img.youtu.be/sxIhDkoLlHg/0.jpg)](https://youtu.be/sxIhDkoLlHg)
 
 
-The remote also gives the user control over the z-axis to make adjustments to the extrusion of the pattern design. This is particularly necessary with regards to food, such as donuts and cupcakes, which do not have a uniform flat surface. 
+Once we were able to accomplish this, we then moved to creating a series of analog controls for the user. We intended for the user to produce a rossette like pattern with our device. 
+
+In consultation with Emilie, we worked to determine which controls and actions should be analog versus digital. 
+
+## Determing Controls 
+
+We decide earlier that the circle diameter and speed were to be set by a screen based user interface. We chose the screen for this interaction to provide the user with visual feedback when they make one of these adjustments. The user then can see and refer to their current and/or previous settings before and after extrude with the machine.
+
+We debated using an analog remote controller for some time and speculated that a game controller would work best as a control system of positioning (x, y, z). 
+
+Certainly, the remote allows the user to keep constant eye contact with the extrusion device as they command its positioning, where as the user would navigate the screen based UI while trying to keep track on the devices physical movements. 
+
+
+[![Testing_Analog_Controller](https://img.youtu.be/IfoJf7Bt9Q8/0.jpg)](https://youtu.be/IfoJf7Bt9Q8)
+
+
+The remote also gives the user control over the z-axis to make adjustments to the extrusion of the pattern design. We thought this would be particularly necessary with regards to food, such as donuts and cupcakes, which do not have a uniform flat surface. 
 
 For the user we decided that buttons on the control offered the best affordances in starting and stopping the spiral. As the user positions the nozzle, buttons on the controller provide the ability to start or stop these processes, a continuous workflow, rather than switching back to the screen based application. 
 
-
+With the digital controls determined, we decided to strip the GUI back to the essential controls and redesign the digital interface. 
 
 ## Future Development
 
@@ -232,6 +244,26 @@ For the user we decided that buttons on the control offered the best affordances
 - **Automated point generation and curves** — Currently all non-spiral motion is manual jogging. A natural next step is to let the operator define a path (sequence of XY points or a Bézier curve) in the UI and have the machine execute it automatically with consistent speed and extrusion.
 
 - **Spherical / vertical-surface control** — A more ambitious extension would add two rotational axes to the head mount, giving spherical reach. Combined with a more viscous or fast-setting material this would allow extrusion on vertical surfaces — sides of cakes, 3D forms — rather than just the top plane.
+
+## Reflection
+
+The prototype worked well enough, at the most bare minimum to test two important interaction goals of the project. We were able to successfully extrude consistency, despite the need to repeatedly tighten screws on the machine for each setup. At the same time, we were able to create a rosette-like pattern and dots but the longevity of a device is short-lived. 
+
+Our approach as a team initially was a down and dirty approach to prototyping. We certainly wanted to rush bullishly towards building a prototype that extruded something. The ECL team made clear to us the importance of conceptualization and modeling. This without a doubt lead to a much higher degree of prototype than we pursued our initial instincts. 
+
+That said, after each new version of our 3D prototypes, we drilled holes, piece together cardboard and so forth. 
+
+Incorporating, learning and working at length in this engineering space significantly reduced the number of prototypes we had to build. As a team, we both came to appreciate and value the importance of spending considerable time on engineering as a process of design and prototyping. 
+
+To have stable positioning and movement of an extruding syringe balance on a 3D printer plate is a feat of engineering knowledge.  And as a team we spent considerable lab working with the ECL team. 
+
+Through this, we certainly learned how to tackle specific engineering challenges, but also how to anticipate engineering issues with each design solution you devise. At the same time coming to appreciate the exactness and reproducibility in order to build successful prototypes that you can test and retest. 
+
+Our goal was to make a device in which cake piping can be fun. Such a machine should be fun. As a classmate mentioned, its greatest value lies in its ability to support accessibility.
+
+As a team we hold the value that the purpose of machines is to support human activity and creativity. 
+
+Our main challenges revolved around understanding the many dimensions of extrusions from machine stability to viscosity of fluids. In using the design of the cheese plate, we copied and pasted to a new fusion file. In effect, this did not create an actual copy of the design file and we needed to redesign the Fusion from scratch. Along with this and the need to make adjustments to our prototype led both us to significantly increase our ability to use and model within Fusion. 
 
 
 
