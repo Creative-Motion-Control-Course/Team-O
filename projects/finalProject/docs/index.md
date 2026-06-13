@@ -179,9 +179,9 @@ Therefore we chose the smaller cake piping syringe, as this provides a more cons
 
 We designed and reprinted our 3D mounting plate and syringe holder.
 
-![Mounted_Mechanism](/assets/mountedjpeg)
+![Mounted_Mechanism](/assets/mounted.jpeg)
 
-[![Modeling_CheesePlate](https://img.youtu.be/yTRx7rTqVcI/0.jpg)](https://youtu.be/yTRx7rTqVcI)
+[![Modeling_CheesePlate][![Video](https://img.youtube.com/vi/yTRx7rTqVcI/hqdefault.jpg)](https://youtu.be/yTRx7rTqVcI)
 
 
 This provide enought stability to conduct our first extrusions tests. 
@@ -210,10 +210,9 @@ We used a pencil to test the output.
 Following this, we conducted a series of extrusion testing focused on determining an angle speed (revolutions per unit) and diameter size to produce a steady stream of cake frosting extrusion. 
 
 
-[![Extrusion_Test_1](https://img.youtu.be/X74_okRHfZA/0.jpg)](https://youtu.be/X74_okRHfZA)
+[![Extrusion_Test_1](https://img.youtube.com/vi/X74_okRHfZA/hqdefault.jpg)](https://youtu.be/X74_okRHfZA)
 
-[![Extrusion_Test_2](https://img.youtu.be/sxIhDkoLlHg/0.jpg)](https://youtu.be/sxIhDkoLlHg)
-
+[![Extrusion_Test_2](https://img.youtube.com/vi/sxIhDkoLlHg/hqdefault.jpg)](https://youtu.be/sxIhDkoLlHg)
 
 Once we were able to accomplish this, we then moved to creating a series of analog controls for the user. We intended for the user to produce a rossette like pattern with our device. 
 
@@ -228,7 +227,7 @@ We debated using an analog remote controller for some time and speculated that a
 Certainly, the remote allows the user to keep constant eye contact with the extrusion device as they command its positioning, where as the user would navigate the screen based UI while trying to keep track on the devices physical movements. 
 
 
-[![Testing_Analog_Controller](https://img.youtu.be/IfoJf7Bt9Q8/0.jpg)](https://youtu.be/IfoJf7Bt9Q8)
+[![Testing_Analog_Controller](https://img.youtube.com/vi/IfoJf7Bt9Q8/0.jpg)](https://youtu.be/IfoJf7Bt9Q8)
 
 
 The remote also gives the user control over the z-axis to make adjustments to the extrusion of the pattern design. We thought this would be particularly necessary with regards to food, such as donuts and cupcakes, which do not have a uniform flat surface. 
